@@ -1,6 +1,0 @@
-FROM golang:alpine3.15
-
-
-
-RUN --mount=type=secret,id=mysecret \
-  ash /run/secrets/mysecret
