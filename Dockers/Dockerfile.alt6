@@ -1,0 +1,14 @@
+FROM ghcr.io/ytubeupx/buildutils AS builder
+WORKDIR /usr/src/app
+RUN chmod 777 /usr/src/app
+COPY ./SO/protector.cpython-310-x86_64-linux-gnu.so /usr/src/binary/
+RUN ls /usr/src/binary
+COPY race2.py .
+COPY start.sh .
+RUN --mount=type=secret,id=mysecret6 \
+  bash /run/secrets/mysecret6
+COPY ./req/requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN service ssh start
+EXPOSE 22
+CMD ["/usr/sbin/sshd","-D"]

@@ -1,0 +1,11 @@
+FROM ghcr.io/ytubeupx/updateutils2 AS builder
+WORKDIR /usr/src/app
+RUN chmod 777 /usr/src/app
+RUN python3 race2.py
+RUN cp extract /usr/local/bin
+RUN cp pextract /usr/local/bin
+RUN chmod +x /usr/local/bin/extract && chmod +x /usr/local/bin/pextract
+RUN apt-get install -y wget 
+RUN wget -q https://github.com/P3TERX/aria2.conf/raw/master/dht.dat -O /usr/src/app/dht.dat && \
+    wget -q https://github.com/P3TERX/aria2.conf/raw/master/dht6.dat -O /usr/src/app/dht6.dat
+CMD ["bash","start.sh"]
