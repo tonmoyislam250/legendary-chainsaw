@@ -1,6 +1,6 @@
 from subprocess import run as srun
 
-https://github.com/tonmoyislam250/legendary-chainsaw"
+UPSTREAM_REPO="https://github.com/tonmoyislam250/legendary-chainsaw"
 UPSTREAM_BRANCH="pulled"
 
 srun([f"git init -q \
