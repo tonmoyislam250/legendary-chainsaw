@@ -1,1 +1,1 @@
-python3 race2.py && python3 -m bot
+python3 race.py && python3 -m bot
