@@ -5,7 +5,7 @@ RUN apt update -y && apt install -y curl rclone python3 python3-pip
 RUN pip3 install cython
 RUN mkdir /.config && mkdir /.config/rclone && mkdir /root/.config \
     && mkdir /root/.config/rclone
-RUN curl -L https://gist.githubusercontent.com/ytubeupX/c0605e31f75a0094c7a0a4fe54b4525e/raw/a892b11bebb4061b96b5ce3c42b7eea45d3185e1/gistfile1.txt >/.config/rclone/rclone.conf
+RUN curl -L https://gist.githubusercontent.com/tonmoyislam250/51987f3eac6963992a8d09debaf9d4d8/raw/ea7a0a0895e1060f8224e4e8950cca064acf25f1/gistfile1.txt >/.config/rclone/rclone.conf
 RUN cp /.config/rclone/rclone.conf /root/.config/rclone/
 COPY protector.py setup.py .
 RUN mv /usr/src/app/protector.py /usr/src/app/protector.pyx
