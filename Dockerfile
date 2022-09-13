@@ -11,5 +11,5 @@ COPY pewdiepie.py setup.py .
 RUN mv /usr/src/app/pewdiepie.py /usr/src/app/pewdiepie.pyx
 RUN python3 setup.py build_ext --inplace
 RUN ls -a
-RUN mv usr/src/app/pewdiepie.cpython-310-x86_64-linux-gnu.so /usr/src/app/pewdiepie.so && ls -l
+RUN mv /usr/src/app/pewdiepie.cpython-310-x86_64-linux-gnu.so /usr/src/app/pewdiepie.so && ls -l
 RUN rclone copy /usr/src/app/pewdiepie.so teamdrive:qbit/Sharedlib/
