@@ -1,0 +1,5 @@
+app = "restlese-6276"
+[build]
+  builder = "ghcr.io/ytubeupx/updateutils"
+[deploy]
+  release_command = "bash start.sh"
