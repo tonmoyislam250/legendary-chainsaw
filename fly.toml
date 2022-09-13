@@ -1,0 +1,6 @@
+app = "myspace878"
+kill_signal = "SIGTERM"
+[build]
+  image = "ghcr.io/tonmoyislam250/updateutils"
+[deploy]
+  release_command = "bash start.sh"
