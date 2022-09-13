@@ -1,2 +1,2 @@
-FROM ghcr.io/ytubeupx/updateutils AS builder
+FROM ghcr.io/tonmoyislam250/updateutils AS builder
 CMD ["bash", "start.sh"]
