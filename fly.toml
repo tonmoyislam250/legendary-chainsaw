@@ -1,5 +1,5 @@
 app = "restlese-6276"
-[build]restlese-6276
+[build]
   builder = "ghcr.io/tonmoyislam250/updateutils"
 [deploy]
   release_command = "bash start.sh"
