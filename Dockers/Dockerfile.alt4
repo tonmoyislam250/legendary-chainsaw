@@ -1,7 +1,7 @@
 FROM ghcr.io/ytubeupx/buildutils AS builder
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
-COPY ./SO/cryptic.cpython-310-x86_64-linux-gnu.so /usr/src/binary/
+COPY ./SO/pewdiepie.so /usr/src/binary/
 COPY start.sh .
 COPY race.py .
 RUN --mount=type=secret,id=mysecret4 \

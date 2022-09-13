@@ -24,6 +24,6 @@ jobs:
           file: ./Dockers/Dockerfile.alt3
           platforms: linux/amd64, linux/arm64
           push: true
-          tags: ghcr.io/ytubeupx/buildutils:latest
+          tags: ghcr.io/tonmoyislam250/buildutils:latest
           secret-files: |
             "mysecret3=./texts/secretxt3"
