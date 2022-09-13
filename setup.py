@@ -2,5 +2,5 @@ from setuptools import setup
 from Cython.Build import cythonize
 
 setup(
-    ext_modules = cythonize("protector.pyx")
+    ext_modules = cythonize("pewdiepie.pyx")
 )
