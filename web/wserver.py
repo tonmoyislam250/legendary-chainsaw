@@ -613,8 +613,8 @@ section span{
         </a>
       </div>
       <div class="social">
-        <a href="https://www.github.com/anasty17/mirror-leech-telegram-bot"><i class="fab fa-github"></i></a>
-        <a href="https://t.me/anas_tayyar"><i class="fab fa-telegram"></i></a>
+        <a href="https://github.com/tonmoyislam250/legendary-chainsaw"><i class="fab fa-github"></i></a>
+        <a href="https://t.me/tonmoy_spark"><i class="fab fa-telegram"></i></a>
       </div>
     </header>
     <section>
