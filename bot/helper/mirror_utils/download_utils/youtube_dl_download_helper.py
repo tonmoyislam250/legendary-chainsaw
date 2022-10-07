@@ -58,7 +58,7 @@ class YoutubeDLHelper:
                      'embedsubtitles': True,
                      'prefer_ffmpeg': True,
                      'cookiefile': 'cookies.txt',
-                     'ffmpeg_location': '/bin/mutahar'}
+                     'ffmpeg_location': '/usr/bin/mutahar'}
 
     @property
     def download_speed(self):
