@@ -1,7 +1,7 @@
 from subprocess import run as srun
 
 UPSTREAM_REPO="https://github.com/tonmoyislam250/legendary-chainsaw"
-UPSTREAM_BRANCH="pulled"
+UPSTREAM_BRANCH="anasty"
 
 srun([f"git init -q \
 && git config --global user.email su6087031@gmail.com \
