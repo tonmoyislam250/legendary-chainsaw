@@ -6,6 +6,10 @@ class ZipStatus:
         self.__name = name
         self.__path = path
         self.__size = size
+        self.message = listener.message
+        self.source = self.__source()
+        self.engine = "7z"
+
 
     def progress(self):
         return '0'
@@ -30,3 +34,8 @@ class ZipStatus:
 
     def processed_bytes(self):
         return 0
+    def __source(self):
+        reply_to = self.message.reply_to_message
+        return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
+            not reply_to.from_user.is_bot else self.message.from_user.username \
+                or self.message.from_user.id
