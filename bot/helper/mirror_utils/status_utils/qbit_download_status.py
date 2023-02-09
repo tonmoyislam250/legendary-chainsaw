@@ -7,6 +7,8 @@ def get_download(client, hash_):
     except Exception as e:
         LOGGER.error(f'{e}: while getting torrent info')
 
+engine_ = f"qBittorrent {get_client().app.version}"
+
 
 class QbDownloadStatus:
 
@@ -16,6 +18,8 @@ class QbDownloadStatus:
         self.__uid = listener.uid
         self.__info = get_download(obj.client, obj.ext_hash)
         self.message = listener.message
+        self.engine = engine_
+        self.source = self.__source()
 
     def __update(self):
         self.__info = get_download(self.__obj.client, self.__obj.ext_hash)
@@ -86,3 +90,10 @@ class QbDownloadStatus:
 
     def listener(self):
         return self.__listener
+
+    def __source(self):
+        reply_to = self.message.reply_to_message
+        return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
+            not reply_to.from_user.is_bot else self.message.from_user.username \
+                or self.message.from_user.id
+
