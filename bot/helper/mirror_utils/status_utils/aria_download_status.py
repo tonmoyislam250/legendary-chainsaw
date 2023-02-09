@@ -100,9 +100,9 @@ class AriaDownloadStatus:
         self.__listener.onDownloadError('Download stopped by user!')
         aria2.remove([download], force=True, files=True)
 
-      def __source(self):
+    def __source(self):
         reply_to = self.message.reply_to_message
         return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
             not reply_to.from_user.is_bot else self.message.from_user.username \
-                or self.message.from_user.id      
+                or self.message.from_user.id
         
