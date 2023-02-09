@@ -144,6 +144,11 @@ def get_readable_message():
                 except:
                     pass
                 try:
+                    msg += f"\n<b>Engine</b>: {download.engine}" \
+                           f"\n<b>Source</b>: <a href='{download.message.link}'>{download.source}</a>"
+                except:
+                    pass
+                try:
                     msg += f"\n├ <b>Seeders:</b> {download.torrent_info().num_seeds}" \
                            f"\n├ <b>Leechers:</b> {download.torrent_info().num_leechs}"
                 except:
