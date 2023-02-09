@@ -144,8 +144,8 @@ def get_readable_message():
                 except:
                     pass
                 try:
-                    msg += f"\n<b>Engine</b>: {download.engine}" \
-                           f"\n<b>Source</b>: <a href='{download.message.link}'>{download.source}</a>"
+                    msg += f"\n├ <b>Engine</b>: {download.engine}" \
+                           f"\n├ <b>Source</b>: <a href='{download.message.link}'>{download.source}</a>"
                 except:
                     pass
                 try:
