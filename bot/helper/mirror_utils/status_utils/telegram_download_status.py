@@ -1,13 +1,17 @@
 from bot import DOWNLOAD_DIR
 from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size, get_readable_time
 
+from pkg_resources import get_distribution
 
+engine_ = f"pyrogram v{get_distribution('pyrogram').version}"
 class TelegramDownloadStatus:
     def __init__(self, obj, listener, gid):
         self.__obj = obj
         self.__uid = listener.uid
         self.__gid = gid
         self.message = listener.message
+        self.source = self.__source()
+        self.engine = engine_
 
     def gid(self):
         return self.__gid
@@ -54,3 +58,8 @@ class TelegramDownloadStatus:
 
     def download(self):
         return self.__obj
+    def __source(self):
+        reply_to = self.message.reply_to_message
+        return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
+            not reply_to.from_user.is_bot else self.message.from_user.username \
+                or self.message.from_user.id
