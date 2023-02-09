@@ -1,6 +1,6 @@
 from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size, get_readable_time
 from bot import DOWNLOAD_DIR
-from pkg_resources import get_distributionfrom pkg_resources import get_distribution
+from pkg_resources import get_distribution
 
 engine_ = f"Google Api v{get_distribution('google-api-python-client').version}"
 
