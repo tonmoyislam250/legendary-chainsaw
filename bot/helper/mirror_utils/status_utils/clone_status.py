@@ -57,7 +57,7 @@ class CloneStatus:
 
     def download(self):
         return self.__obj
-        def __source(self):
+    def __source(self):
         reply_to = self.message.reply_to_message
         return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
             not reply_to.from_user.is_bot else self.message.from_user.username \
