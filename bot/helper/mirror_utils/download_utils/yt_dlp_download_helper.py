@@ -64,7 +64,7 @@ class YoutubeDLHelper:
                      'noprogress': True,
                      'allow_playlist_files': True,
                      'overwrites': True,
-                     'ffmpeg_location': '/bin/mutahar'}
+                     'ffmpeg_location': '/usr/bin/mutahar'}
 
     @property
     def download_speed(self):
