@@ -122,9 +122,9 @@ class MirrorListener:
                     path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
                 else:
                     if self.pswd is not None:
-                        result = srun(["bash", "pextract", m_path, self.pswd])
+                        result = srun(["ash", "pextract", m_path, self.pswd])
                     else:
-                        result = srun(["bash", "extract", m_path])
+                        result = srun(["ash", "extract", m_path])
                     if result.returncode == 0:
                         LOGGER.info(f"Extracted Path: {path}")
                         osremove(m_path)
