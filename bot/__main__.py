@@ -200,7 +200,7 @@ def bot_help(update, context):
 
 
 botcmds = [
-		(f'{BotCommands.TsHelpCommand}','Torrent searching'),
+		(f'{BotCommands.SearchCommand}','Torrent searching'),
         (f'{BotCommands.SpeedCommand}','Speed Of The Bot'),
         (f'{BotCommands.HelpCommand}','Get Detailed Help'),
         (f'{BotCommands.StartCommand}','Start The Bot'),
