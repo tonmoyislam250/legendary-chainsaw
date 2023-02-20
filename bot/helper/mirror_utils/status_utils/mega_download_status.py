@@ -1,8 +1,8 @@
-import os
+import os,subprocess
 from bot import DOWNLOAD_DIR
 from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size, get_readable_time
 
-engine_= os.popen('megasdkrest -v').read()
+engine_= subprocess.getoutput('megasdkrest -v')
 class MegaDownloadStatus:
     def __init__(self, obj, listener):
         self.__obj = obj
