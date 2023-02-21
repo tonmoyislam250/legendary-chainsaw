@@ -62,3 +62,5 @@ class CloneStatus:
         return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
             not reply_to.from_user.is_bot else self.message.from_user.username \
                 or self.message.from_user.id
+    def mode(self):
+        return self.__listener.mode
