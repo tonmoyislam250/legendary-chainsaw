@@ -48,6 +48,20 @@ class MirrorListener:
         self.pswd = pswd
         self.tag = tag
         self.isPrivate = self.message.chat.type in ['private', 'group']
+        self.__setMode()
+        
+    def __setMode(self):
+        if self.isLeech:
+            mode = 'Leech'
+        elif self.isClone:
+            mode = f'Clone {CATEGORY_NAMES[self.c_index]}'
+        else:
+            mode = f'Drive {CATEGORY_NAMES[self.c_index]}'
+        if self.isZip:
+            mode += ' as Zip'
+        elif self.extract:
+            mode += ' as Unzip'
+        self.mode = mode
 
     def clean(self):
         try:
