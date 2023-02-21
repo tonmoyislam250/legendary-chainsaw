@@ -54,7 +54,7 @@ class MirrorListener:
         if self.isLeech:
             mode = 'Leech'
         else:
-            mode = f'Drive {CATEGORY_NAMES[self.c_index]}'
+            mode = f'Drive as Root'
         if self.isZip:
             mode += ' as Zip'
         elif self.extract:
