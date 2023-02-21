@@ -53,8 +53,6 @@ class MirrorListener:
     def __setMode(self):
         if self.isLeech:
             mode = 'Leech'
-        elif self.isClone:
-            mode = f'Clone {CATEGORY_NAMES[self.c_index]}'
         else:
             mode = f'Drive {CATEGORY_NAMES[self.c_index]}'
         if self.isZip:
