@@ -152,6 +152,7 @@ def get_readable_message():
                 try:
                     msg += f"\n├ <b>Engine</b>: {download.engine}" \
                            f"\n├ <b>Source</b>: <a href='{download.message.link}'>{download.source}</a>"
+                    msg += f"\n<b>Elapsed</b>: {get_readable_time(time() - download.message.date.timestamp())}"
                 except:
                     pass
                 try:
