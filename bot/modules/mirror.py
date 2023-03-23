@@ -87,7 +87,7 @@ class MirrorListener:
         if self.isZip:
             try:
                 with download_dict_lock:
-                    download_dict[self.uid] = ZipStatus(name, m_path, size)
+                    download_dict[self.uid] = ZipStatus(name, m_path, size, self)
                 path = m_path + ".zip"
                 LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
                 if self.pswd is not None:
