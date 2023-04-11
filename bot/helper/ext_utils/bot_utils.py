@@ -119,6 +119,7 @@ def get_progress_bar_string(status):
 
 
 def get_readable_message():
+    print("hello boi")
     print(download_dict)
     with download_dict_lock:
         msg = ""
