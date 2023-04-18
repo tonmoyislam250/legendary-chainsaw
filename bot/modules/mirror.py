@@ -54,7 +54,7 @@ class MirrorListener:
         if self.isLeech:
             mode = 'Leech'
         else:
-          if self.isQbit
+          if self.isQbit:
             mode =f'qBit Drive Root'
           else:
             mode = f'Drive as Root'
