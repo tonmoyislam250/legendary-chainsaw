@@ -14,6 +14,7 @@ class UploadStatus:
         self.message = listener.message
         self.source = self.__source()
         self.engine = engine_
+        self.__listener = listener
 
 
     def path(self):
@@ -59,6 +60,9 @@ class UploadStatus:
         except ZeroDivisionError:
             return '-'
 
+    def mode(self):
+        return self.__listener.mode 
+   
     def gid(self) -> str:
         return self.__gid
 
