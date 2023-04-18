@@ -91,6 +91,9 @@ class QbDownloadStatus:
     def listener(self):
         return self.__listener
 
+    def mode(self):
+        return self.__listener.mode
+    
     def __source(self):
         reply_to = self.message.reply_to_message
         return reply_to.from_user.username or reply_to.from_user.id if reply_to and \
