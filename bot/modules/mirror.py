@@ -53,8 +53,6 @@ class MirrorListener:
     def __setMode(self):
         if self.isLeech:
             mode = 'Leech'
-        elif self.isClone:
-            mode = 'Clone'
         elif self.isQbit:
             mode = f'qBit Drive Root'
         else:
