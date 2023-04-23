@@ -55,16 +55,18 @@ class setInterval:
 
     def cancel(self):
         self.stopEvent.set()
+
+
 def getos():
     with open('/etc/os-release') as inf:
         for line in inf:
             line = line.split('=')
             line[0] = line[0].strip()
             if line[0] == "NAME":
-                OSNAME = line[1].strip()
+                OSNAME = line[1].strip().replace('"', '')
             if line[0] == "VERSION_ID":
                 OSNAME = OSNAME +' '+line[1]
-    return OSNAME
+    return OSNAME.strip()
 
 
 def get_readable_file_size(size_in_bytes) -> str:
