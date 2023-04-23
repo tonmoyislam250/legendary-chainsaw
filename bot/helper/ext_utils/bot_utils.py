@@ -61,9 +61,9 @@ def getos():
             line = line.split('=')
             line[0] = line[0].strip()
             if line[0] == "NAME":
-                OSNAME = line[1]
-            if line[0] == "ID":
-                OSNAME = OSNAME +line[1]
+                OSNAME = line[1].strip()
+            if line[0] == "VERSION_ID":
+                OSNAME = OSNAME +' '+line[1]
     return OSNAME
 
 
