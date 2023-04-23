@@ -55,6 +55,17 @@ class setInterval:
 
     def cancel(self):
         self.stopEvent.set()
+def getos():
+    with open('/etc/os-release') as inf:
+        for line in inf:
+            line = line.split('=')
+            line[0] = line[0].strip()
+            if line[0] == "NAME":
+                OSNAME = line[1]
+            if line[0] == "ID":
+                OSNAME = OSNAME +line[1]
+    return OSNAME
+
 
 def get_readable_file_size(size_in_bytes) -> str:
     if size_in_bytes is None:
@@ -155,6 +166,7 @@ def get_readable_message():
                            f"\n├ <b>Source</b>: <a href='{download.message.link}'>{download.source}</a>"
                     msg += f"\n<b>├ Elapsed</b>: {get_readable_time(time() - download.message.date.timestamp())}"
                     msg += f"\n<b>├ Upload</b>: {download.mode()}"
+                    msg += f"\n<b>├ OS</b>: {getos()}"
                 except:
                     pass
                 try:
