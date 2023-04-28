@@ -5,11 +5,14 @@ class ZipStatus:
     def __init__(self, name, path, size, listener):
         self.__name = name
         self.__path = path
+        self.__listener = listener
         self.__size = size
         self.message = listener.message
         self.source = self.__source()
         self.engine = "7z"
 
+    def mode(self):
+        return self.__listener.mode
 
     def progress(self):
         return '0'
