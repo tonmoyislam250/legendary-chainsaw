@@ -2,11 +2,11 @@ from bot.helper.ext_utils.bot_utils import get_readable_file_size, MirrorStatus
 
 
 class SplitStatus:
-    def __init__(self, name, path, size):
+    def __init__(self, name, path, size, listener):
         self.__name = name
         self.__path = path
         self.__size = size
-        self.message = self.__listener.message
+        self.message = listener.message
         self.source = self.__source()
         self.engine = "ffmpeg/split"
         
