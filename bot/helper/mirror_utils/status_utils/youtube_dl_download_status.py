@@ -9,11 +9,16 @@ class YoutubeDLDownloadStatus:
     def __init__(self, obj, listener, gid):
         self.__obj = obj
         self.__uid = listener.uid
+       self.__listener = listener
         self.__gid = gid
         self.message = listener.message
         self.source = self.__source()
         self.engine = engine_
         
+
+    def mode(self):
+        return self.__listener.mode
+
     def gid(self):
         return self.__gid
 
