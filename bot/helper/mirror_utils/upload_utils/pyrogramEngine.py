@@ -36,16 +36,16 @@ class TgUploader:
         self.__corrupted = 0
         self.__resource_lock = RLock()
         self.__is_corrupted = False
-#        self.__sent_msg = app.get_messages(self.__listener.message.chat.id, self.__listener.uid)
+        self.__sent_msg = app.get_messages(self.__listener.message.chat.id, self.__listener.uid)
         self.__user_settings()
         self.__msg_to_reply()
 
-
+/*
     def __msg_to_reply(self):
         msg = self.__listener.message.text
         self.__sent_msg = app.send_message(DUMP_CHAT, msg, disable_web_page_preview=True)
         self.__sent_msg = app.get_messages(chat_id=self.__sent_msg.chat.id, message_ids=self.__sent_msg.id)
-
+*/
     def upload(self):
         path = f"{DOWNLOAD_DIR}{self.__listener.uid}"
         size = get_readable_file_size(get_path_size(path))
