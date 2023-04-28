@@ -9,6 +9,7 @@ class GdDownloadStatus:
         self.__obj = obj
         self.__size = size
         self.__uid = listener.uid
+        self.__listener = listener
         self.message = listener.message
         self.__gid = gid
         self.source = self.__source()
@@ -67,3 +68,6 @@ class GdDownloadStatus:
 
     def download(self):
         return self.__obj
+
+    def mode(self):
+        return self.__listener.mode
