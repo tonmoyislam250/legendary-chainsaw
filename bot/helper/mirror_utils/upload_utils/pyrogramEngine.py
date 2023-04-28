@@ -41,10 +41,10 @@ class TgUploader:
         self.__msg_to_reply()
 
 
-    async def __msg_to_reply(self):
+    def __msg_to_reply(self):
         msg = f'<b><a href="{self.__listener.message.link}">Source</a></b>' if self.__listener.isSuperGroup else self.__listener.message.text
-        self.__sent_msg = await app.send_message(DUMP_CHAT, msg, disable_web_page_preview=True)
-        self.__sent_msg = await app.get_messages(chat_id=self.__sent_msg.chat.id, message_ids=self.__sent_msg.id)
+        self.__sent_msg = app.send_message(DUMP_CHAT, msg, disable_web_page_preview=True)
+        self.__sent_msg = app.get_messages(chat_id=self.__sent_msg.chat.id, message_ids=self.__sent_msg.id)
 
     def upload(self):
         path = f"{DOWNLOAD_DIR}{self.__listener.uid}"
