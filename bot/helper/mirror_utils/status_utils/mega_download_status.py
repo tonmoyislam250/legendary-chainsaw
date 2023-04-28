@@ -7,9 +7,14 @@ class MegaDownloadStatus:
     def __init__(self, obj, listener):
         self.__obj = obj
         self.__uid = listener.uid
+        self.__listener = listener
         self.message = listener.message
         self.source = self.__source()
         self.engine = engine_
+
+
+    def mode(self):
+        return self.__listener.mode
 
     def gid(self):
         return self.__obj.gid
