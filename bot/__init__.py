@@ -241,6 +241,7 @@ try:
 except:
     DB_URI = None
 try:
+    DUMP_CHAT = getConfig('DUMP_CHAT')
     TG_SPLIT_SIZE = getConfig('TG_SPLIT_SIZE')
     if len(TG_SPLIT_SIZE) == 0 or int(TG_SPLIT_SIZE) > 2097151000:
         raise KeyError
