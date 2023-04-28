@@ -7,11 +7,15 @@ class TgUploadStatus:
     def __init__(self, obj, size, gid, listener):
         self.__obj = obj
         self.__size = size
+        self.__listener = listener
         self.__uid = listener.uid
         self.__gid = gid
         self.message = listener.message
         self.source = self.__source()
         self.engine = engine_
+
+    def mode(self):
+        return self.__listener.mode
 
     def path(self):
         return f"{DOWNLOAD_DIR}{self.__uid}"
