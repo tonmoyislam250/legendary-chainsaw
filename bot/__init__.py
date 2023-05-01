@@ -15,6 +15,7 @@ from subprocess import Popen
 from subprocess import run as srun
 from threading import Thread
 from time import sleep, time
+from requests import get as rget
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aria2p import API as ariaAPI
