@@ -275,7 +275,7 @@ async def load_config():
     if len(BASE_URL) == 0:
         BASE_URL = ''
     else:
-        await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{BASE_URL_PORT} --worker-class gevent")
+        await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
 
     UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
     if len(UPSTREAM_REPO) == 0:
@@ -649,7 +649,7 @@ async def edit_variable(client, message, pre_message, key):
         value = int(value)
         if config_dict['BASE_URL']:
             await (await create_subprocess_exec("pkill", "-9", "-f", "gunicorn")).wait()
-            await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{value} --worker-class gevent")
+            await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
     elif key == 'EXTENSION_FILTER':
         fx = value.split()
         GLOBAL_EXTENSION_FILTER.clear()
@@ -939,7 +939,7 @@ async def edit_bot_settings(client, query):
             value = 80
             if config_dict['BASE_URL']:
                 await (await create_subprocess_exec("pkill", "-9", "-f", "gunicorn")).wait()
-                await create_subprocess_shell("gunicorn web.wserver:app --bind 0.0.0.0:80 --worker-class gevent")
+                await create_subprocess_shell("gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
         elif data[2] == 'GDRIVE_ID':
             if 'Main' in list_drives_dict:
                 del list_drives_dict['Main']
