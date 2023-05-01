@@ -548,6 +548,9 @@ if ospath.exists('categories.txt'):
                 tempdict['index_link'] = ''
             categories_dict[name] = tempdict
 
+
+PORT = environ.get('PORT')
+
 if BASE_URL:
     Popen(
         f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent", shell=True)

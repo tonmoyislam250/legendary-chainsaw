@@ -35,6 +35,8 @@ from bot.helper.telegram_helper.message_utils import (editMessage, sendFile,
 from bot.modules.rss import addJob
 from bot.modules.torrent_search import initiate_search_tools
 
+PORT = environ.get('PORT')
+
 START = 0
 STATE = 'view'
 handler_dict = {}
