@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from asyncio import create_subprocess_exec, gather
-from os import execl as osexecl
+from os import execl as osexecl, system
 from signal import SIGINT, signal
 from sys import executable
 from time import time
@@ -37,13 +37,25 @@ from .modules import (anonymous, authorize, bot_settings, cancel_mirror,
 
 start_aria2_listener()
 
+async def getos():
+  with open('/etc/os-release') as inf:
+    for line in inf:
+      line = line.split('=')
+      line[0] = line[0].strip()
+      if line[0] == "NAME":
+        OSNAME = line[1].strip().replace('"', '')
+      if line[0] == "VERSION_ID":
+        OSNAME = OSNAME +' '+line[1]
+  return OSNAME.strip()
+
 
 async def versionInfo(client, message):
+  ffmpegv = system("mutahar -version | sed -n 's/ffmpeg version \([-0-9.]*\).*/\1/p;'")
   version = f'<b>Python Version</b>: {python_version()}\n'\
             f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
             f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'\
-            f'<b>FFMPEG Version</b>: {system("mutahar -version | sed -n "s/ffmpeg version \([-0-9.]*\).*/\1/p;"")}\n'
-            #f'<b>Operating System</b>: 
+            f'<b>FFMPEG Version</b>: {ffmpegv}\n'\
+            f'<b>Operating System</b>: {getos()}\n'
   await sendMessage(message, version)
 
 
