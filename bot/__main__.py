@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+import subprocess
 from asyncio import create_subprocess_exec, gather
-from os import execl as osexecl, system
+from os import execl as osexecl
 from signal import SIGINT, signal
 from sys import executable
 from time import time
@@ -50,11 +51,12 @@ def getos():
 
 
 async def versionInfo(client, message):
-  ffmpegv = system("mutahar -version | sed -n 's/ffmpeg version \([-0-9.]*\).*/\1/p;'")
+  output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
+  versionffmpeg = output.split('\n')[0].split(' ')[2]
   version = f'<b>Python Version</b>: {python_version()}\n'\
             f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
             f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'\
-            f'<b>FFMPEG Version</b>: {ffmpegv}\n'\
+            f'<b>FFMPEG Version</b>: {versionffmpeg}\n'\
             f'<b>Operating System</b>: {getos()}\n'
   await sendMessage(message, version)
 
