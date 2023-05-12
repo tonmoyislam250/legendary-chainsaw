@@ -15,7 +15,7 @@ from pyrogram.handlers import MessageHandler
 from uuid import uuid4
 from bot import (DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER,
                  STOP_DUPLICATE_TASKS, Interval, QbInterval, bot, botStartTime,
-                 user_data,
+                 user_data, aria2, get_client, 
                  config_dict, scheduler)
 from bot.helper.listeners.aria2_listener import start_aria2_listener
 
@@ -35,6 +35,14 @@ from .modules import (anonymous, authorize, bot_settings, cancel_mirror,
                       torrent_select, users_settings, ytdlp)
 
 start_aria2_listener()
+
+
+async def versionInfo(client, message):
+  version = f'<b>Python Version</b>: {python_version}\n'\
+            f'<b>Aria2 Version</b>: {aria2.client.get_version()['version']}\n'\
+            f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'
+            #f'<b>FFMPEG Version: {}
+ await sendMessage(message, version)
 
 
 async def stats(client, message):
@@ -227,6 +235,8 @@ async def main():
         BotCommands.HelpCommand) & CustomFilters.authorized))
     bot.add_handler(MessageHandler(stats, filters=command(
         BotCommands.StatsCommand) & CustomFilters.authorized))
+    bot.add_handler(MessageHandler(versionInfo, filters=command(
+    BotCommands.VerCommand) & CustomFilters.authorized))
     LOGGER.info("Bot Started!")
     signal(SIGINT, exit_clean_up)
 
