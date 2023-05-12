@@ -4,6 +4,7 @@ from os import execl as osexecl
 from signal import SIGINT, signal
 from sys import executable
 from time import time
+from platform import python_version
 
 from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
