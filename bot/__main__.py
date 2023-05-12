@@ -42,7 +42,7 @@ async def versionInfo(client, message):
   version = f'<b>Python Version</b>: {python_version()}\n'\
             f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
             f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'\
-            f'<b>FFMPEG Version</b>: {system("mutahar -version | sed -n 's/ffmpeg version \([-0-9.]*\).*/\1/p;'")}\n'
+            f'<b>FFMPEG Version</b>: {system("mutahar -version | sed -n "s/ffmpeg version \([-0-9.]*\).*/\1/p;"")}\n'
             #f'<b>Operating System</b>: 
   await sendMessage(message, version)
 
