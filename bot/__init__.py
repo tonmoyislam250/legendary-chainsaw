@@ -550,6 +550,8 @@ if ospath.exists('categories.txt'):
 
 
 PORT = environ.get('PORT')
+HEROKU_API_KEY = environ.get('HEROKU_API_KEY')
+HEROKU_APP_NAME = environ.get('HEROKU_APP_NAME')
 
 if BASE_URL:
     Popen(
