@@ -46,7 +46,7 @@ async def getos():
         OSNAME = line[1].strip().replace('"', '')
       if line[0] == "VERSION_ID":
         OSNAME = OSNAME +' '+line[1]
-  return OSNAME.strip()
+  await return OSNAME.strip()
 
 
 async def versionInfo(client, message):
