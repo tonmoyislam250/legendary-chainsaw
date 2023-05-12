@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import subprocess
+import subprocess, os, requests
 from asyncio import create_subprocess_exec, gather
 from os import execl as osexecl
 from signal import SIGINT, signal
@@ -15,7 +15,7 @@ from psutil import (boot_time, cpu_count, cpu_percent, disk_usage,
 from pyrogram.filters import command
 from pyrogram.handlers import MessageHandler
 from uuid import uuid4
-from bot import (DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER,
+from bot import (DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER, HEROKU_APP_NAME, HEROKU_API_KEY,
                  STOP_DUPLICATE_TASKS, Interval, QbInterval, bot, botStartTime,
                  user_data, aria2, get_client, 
                  config_dict, scheduler)
@@ -48,6 +48,19 @@ def getos():
       if line[0] == "VERSION_ID":
         OSNAME = OSNAME +' '+line[1]
   return OSNAME.strip()
+
+async def restartdyno(client, message):
+  headers = {
+    'Accept': 'application/vnd.heroku+json; version=3',
+    'Authorization': f'Bearer {HEROKU_API_KEY}'
+  }
+  url = f'https://api.heroku.com/apps/{HEROKU_APP_NAME}/dynos'
+  response = requests.delete(url, headers=headers)
+  msg = f"{HEROKU_APP_NAME} named app's DYNO Restarted"
+  if response.status_code == 202:
+   await sendMessage(message, msg)
+  else:
+   await sendMessage(message, f'Error restarting dyno: {response.status_code}')
 
 
 async def versionInfo(client, message):
@@ -252,7 +265,9 @@ async def main():
     bot.add_handler(MessageHandler(stats, filters=command(
         BotCommands.StatsCommand) & CustomFilters.authorized))
     bot.add_handler(MessageHandler(versionInfo, filters=command(
-    BotCommands.VerCommand) & CustomFilters.authorized))
+        BotCommands.VerCommand) & CustomFilters.authorized))
+    bot.add_handler(MessageHandler(restartdyno, filters=command(
+        BotCommands.DynoCommand) & CustomFilters.authorized))
     LOGGER.info("Bot Started!")
     signal(SIGINT, exit_clean_up)
 
