@@ -38,8 +38,8 @@ start_aria2_listener()
 
 
 async def versionInfo(client, message):
-  version = f'<b>Python Version</b>: {python_version}\n'\
-            f'<b>Aria2 Version</b>: {aria2.client.get_version()['version']}\n'\
+  version = f'<b>Python Version</b>: {python_version()}\n'\
+            f'<b>Aria2 Version</b>: {aria2.client.get_version()}\n'\
             f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'
             #f'<b>FFMPEG Version: {}
  await sendMessage(message, version)
