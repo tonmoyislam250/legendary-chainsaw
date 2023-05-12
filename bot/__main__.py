@@ -42,7 +42,7 @@ async def versionInfo(client, message):
             f'<b>Aria2 Version</b>: {aria2.client.get_version()}\n'\
             f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'
             #f'<b>FFMPEG Version: {}
- await sendMessage(message, version)
+  await sendMessage(message, version)
 
 
 async def stats(client, message):
