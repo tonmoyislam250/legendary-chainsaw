@@ -37,7 +37,7 @@ from .modules import (anonymous, authorize, bot_settings, cancel_mirror,
 
 start_aria2_listener()
 
-async def getos():
+def getos():
   with open('/etc/os-release') as inf:
     for line in inf:
       line = line.split('=')
@@ -46,7 +46,7 @@ async def getos():
         OSNAME = line[1].strip().replace('"', '')
       if line[0] == "VERSION_ID":
         OSNAME = OSNAME +' '+line[1]
-  await return OSNAME.strip()
+  return OSNAME.strip()
 
 
 async def versionInfo(client, message):
