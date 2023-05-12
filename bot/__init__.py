@@ -332,7 +332,7 @@ RCLONE_SERVE_URL = environ.get('RCLONE_SERVE_URL', '')
 if len(RCLONE_SERVE_URL) == 0:
     RCLONE_SERVE_URL = ''
 
-RCLONE_SERVE_PORT = environ.get('RCLONE_SERVE_PORT', '')
+RCLONE_SERVE_PORT = environ.get('PORT', '')
 RCLONE_SERVE_PORT = 8080 if len(
     RCLONE_SERVE_PORT) == 0 else int(RCLONE_SERVE_PORT)
 
@@ -583,7 +583,7 @@ def get_client():
 def aria2c_init():
     try:
         log_info("Initializing Aria2c")
-        link = "https://linuxmint.com/torrents/lmde-5-cinnamon-64bit.iso.torrent"
+        link = "https://freetestdata.com/wp-content/uploads/2021/09/Free_Test_Data_5MB_MP3.mp3"
         dl = aria2.add_uris([link], {'dir': DOWNLOAD_DIR.rstrip("/")})
         for _ in range(4):
             dl = dl.live
