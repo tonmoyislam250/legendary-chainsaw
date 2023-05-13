@@ -1,9 +1,9 @@
 from speedtest import Speedtest
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot import dispatcher, AUTHORIZED_CHATS
+from bot import bot
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import CallbackContext, Filters, run_async, CommandHandler
+from telegram.ext import CallbackContext, Filters
 
 
 def speedtest(update, context):
@@ -45,8 +45,6 @@ def speed_convert(size):
     return f"{round(size, 2)} {units[zero]}"
 
 
-SPEED_HANDLER = CommandHandler(BotCommands.SpeedCommand, speedtest, 
+bot.add_handler(MessageHandler(mirror_status, filters=command(
+    BotCommands.SpeedTestCommand) & CustomFilters.authorized)), speedtest, 
                                                   filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
-
-dispatcher.add_handler(SPEED_HANDLER)
-dispatcher.run_async
