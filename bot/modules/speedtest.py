@@ -7,7 +7,7 @@ from pyrogram.handlers import MessageHandler
 
 
 
-def speedtest(client, message)
+def speedtest(client, message):
     ed_msg = message.reply_text("hello. Speed Test . . . ")
     test = Speedtest()
     test.get_best_server()
