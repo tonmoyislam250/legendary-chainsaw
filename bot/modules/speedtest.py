@@ -6,9 +6,8 @@ from pyrogram.filters import command
 from pyrogram.handlers import MessageHandler
 
 
-
-def speedtest(client, message):
-    ed_msg = message.reply_text("hello. Speed Test . . . ")
+async def speedtest(client, message):
+    ed_msg = await message.reply_text("hello. Speed Test . . . ")
     test = Speedtest()
     test.get_best_server()
     test.download()
@@ -30,9 +29,10 @@ def speedtest(client, message):
 '''
     ed_msg.delete()
     try:
-        message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
+        await message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
     except:
-        message.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
+        await message.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
+
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
@@ -44,4 +44,6 @@ def speed_convert(size):
         zero += 1
     return f"{round(size, 2)} {units[zero]}"
 
-bot.add_handler(MessageHandler(speedtest, filters=command(BotCommands.SpeedTestCommand) & CustomFilters.authorized))
+
+bot.add_handler(MessageHandler(speedtest, filters=command(
+    BotCommands.SpeedTestCommand) & CustomFilters.authorized))
