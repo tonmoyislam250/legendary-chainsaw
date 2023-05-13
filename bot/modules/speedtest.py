@@ -30,7 +30,7 @@ async def speedtest(client, message):
 '''
     ed_msg.delete()
     try:
-        await message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
+        await message.reply_photo(photo=path, caption=string_speed, parse_mode=ParseMode.HTML)
     except:
         await message.reply_text(string_speed, parse_mode=ParseMode.HTML)
 
