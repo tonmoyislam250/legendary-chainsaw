@@ -31,7 +31,7 @@ async def speedtest(client, message):
     try:
         await message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
     except:
-        await message.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
+        await message.reply_text(string_speed, parse_mode=ParseMode.HTML)
 
 
 def speed_convert(size):
