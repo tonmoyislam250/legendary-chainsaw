@@ -1,14 +1,14 @@
 from speedtest import Speedtest
-from bot.helper.telegram_helper.filters import CustomFilters
 from bot import bot
+from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import CallbackContext, Filters
+from pyrogram.filters import command
+from pyrogram.handlers import MessageHandler
 
 
-def speedtest(update, context):
-    message = update.effective_message
-    ed_msg = message.reply_text("Running Speed Test . . . ")
+
+def speedtest(client, message)
+    ed_msg = message.reply_text("hello. Speed Test . . . ")
     test = Speedtest()
     test.get_best_server()
     test.download()
@@ -30,9 +30,9 @@ def speedtest(update, context):
 '''
     ed_msg.delete()
     try:
-        update.effective_message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
+        message.reply_photo(path, string_speed, parse_mode=ParseMode.HTML)
     except:
-        update.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
+        message.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
 
 def speed_convert(size):
     """Hi human, you can't read bytes?"""
