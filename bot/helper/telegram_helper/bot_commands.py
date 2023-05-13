@@ -3,6 +3,7 @@ from bot import CMD_SUFFIX
 
 class _BotCommands:
     def __init__(self):
+        self.SpeedTestCommand = 'speedtest'
         self.DynoCommand = 'dyno'
         self.VerCommand = 'version'
         self.StartCommand = 'start'
