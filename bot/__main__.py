@@ -61,7 +61,15 @@ async def restartdyno(client, message):
    await sendMessage(message, msg)
   else:
    await sendMessage(message, f'Error restarting dyno: {response.status_code}')
-
+  restart_complete = False
+  while not restart_complete:
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        dynos = response.json()
+        if all(dyno['state'] == 'idle' for dyno in dynos):
+            restart_complete = True
+    time.sleep(5)
+  await EditMessage(message, f'Bot Dyno restarted!!')
 
 async def versionInfo(client, message):
   output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
