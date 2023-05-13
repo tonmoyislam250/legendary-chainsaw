@@ -28,7 +28,7 @@ async def speedtest(client, message):
 <b>Ping:</b> <code>{result['ping']} ms</code>
 <b>ISP:</b> <code>{result['client']['isp']}</code>
 '''
-    ed_msg.delete()
+    await ed_msg.delete()
     try:
         await message.reply_photo(photo=path, caption=string_speed, parse_mode=ParseMode.HTML)
     except:
