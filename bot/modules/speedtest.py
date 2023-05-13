@@ -45,6 +45,4 @@ def speed_convert(size):
     return f"{round(size, 2)} {units[zero]}"
 
 
-bot.add_handler(MessageHandler(mirror_status, filters=command(
-    BotCommands.SpeedTestCommand) & CustomFilters.authorized)), speedtest, 
-                                                  filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+bot.add_handler(MessageHandler(mirror_status, filters=command (BotCommands.SpeedTestCommand) & CustomFilters.authorized)), speedtest,filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
