@@ -4,6 +4,7 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from pyrogram.filters import command
 from pyrogram.handlers import MessageHandler
+from pyrogram.enums import ParseMode
 
 
 async def speedtest(client, message):
