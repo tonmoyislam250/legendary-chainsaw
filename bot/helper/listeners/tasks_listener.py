@@ -134,7 +134,7 @@ class MirrorLeechListener:
         async with download_dict_lock:
             if len(self.sameDir) > 1:
                 self.sameDir.remove(self.uid)
-                folder_name = (await listdir(self.dir))[-1]
+                folder_name = (await listdir(self.dir))[0]
                 path = f"{self.dir}/{folder_name}"
                 des_path = f"{DOWNLOAD_DIR}{list(self.sameDir)[0]}/{folder_name}"
                 await makedirs(des_path, exist_ok=True)
