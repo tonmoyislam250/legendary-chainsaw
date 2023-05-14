@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import subprocess, os, requests, time
+import subprocess, os, requests
 from asyncio import create_subprocess_exec, gather
 from os import execl as osexecl
 from signal import SIGINT, signal
 from sys import executable
-from time import time
+from time import sleep
 from platform import python_version
 
 from aiofiles import open as aiopen
