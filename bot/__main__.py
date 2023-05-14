@@ -4,7 +4,7 @@ from asyncio import create_subprocess_exec, gather
 from os import execl as osexecl
 from signal import SIGINT, signal
 from sys import executable
-from time import sleep
+from time import time, sleep
 from platform import python_version
 
 from aiofiles import open as aiopen
