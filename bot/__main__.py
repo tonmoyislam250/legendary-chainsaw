@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import subprocess, os, requests
+import subprocess, os, requests, time
 from asyncio import create_subprocess_exec, gather
 from os import execl as osexecl
 from signal import SIGINT, signal
