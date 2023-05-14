@@ -69,7 +69,7 @@ async def restartdyno(client, message):
         if all(dyno['state'] == 'idle' for dyno in dynos):
             restart_complete = True
     time.sleep(5)
-  await EditMessage(message, f'Bot Dyno restarted!!')
+  await sendMessage(message, f'Bot Dyno restarted!!')
 
 async def versionInfo(client, message):
   output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
@@ -129,8 +129,7 @@ async def start(client, message):
             'Now I will send your files and links here.\n'
     else:
         start_string = '🌹 Welcome To One Of A Modified Anasty Mirror Bot\n' \
-            'This bot can Mirror all your links To Google Drive!\n' \
-            '👨🏽‍💻 Powered By: @JMDKH_Team'
+            'This bot can Mirror all your links To Google Drive!\n'
     await sendMessage(message, start_string)
 
 
