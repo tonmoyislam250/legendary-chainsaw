@@ -68,7 +68,7 @@ async def restartdyno(client, message):
         dynos = response.json()
         if all(dyno['state'] == 'idle' for dyno in dynos):
             restart_complete = True
-    time.sleep(5)
+    sleep(5)
   await sendMessage(message, f'Bot Dyno restarted!!')
 
 async def versionInfo(client, message):
