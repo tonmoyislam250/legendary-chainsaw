@@ -109,7 +109,7 @@ async def restart(_, message):
         if interval:
             interval[0].cancel()
     await sync_to_async(clean_all)
-    proc1 = await create_subprocess_exec('pkill', '-9', '-f', 'gunicorn|aria2c|qbittorrent-nox|ffmpeg|rclone')
+    proc1 = await create_subprocess_exec('pkill', '-9', '-f', 'gunicorn|mrbeast|pewdiepie|mutahar|rclone')
     proc2 = await create_subprocess_exec('python3', 'update.py')
     await gather(proc1.wait(), proc2.wait())
     async with aiopen(".restartmsg", "w") as f:
