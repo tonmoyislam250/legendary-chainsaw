@@ -125,7 +125,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     parts = ceil(size/leech_split_size)
     if ((user_dict and user_dict.get('equal_splits')) or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ceil(size/parts) + 1000
-    if get_media_streams(path)[0]:
+    if (await get_media_streams(path))[0]:
         duration = get_media_info(path)[0]
         base_name, extension = ospath.splitext(file_)
         split_size = split_size - 5000000
