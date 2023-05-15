@@ -14,27 +14,32 @@ from bot.helper.ext_utils.bot_utils import cmd_exec, sync_to_async
 from bot.helper.ext_utils.fs_utils import ARCH_EXT, get_mime_type
 
 
-async def is_multi_streams(path):
+async def get_media_streams(path):
+    is_video = False
+    is_audio = False
+    mime_type = get_mime_type(path)
+    if mime_type.startswith('audio'):
+        is_audio = True
+        return is_video, is_audio
+    if not mime_type.startswith('video'):
+        return is_video, is_audio
     try:
-        result = await cmd_exec(["ffprobe", "-hide_banner", "-loglevel", "error", "-print_format",
-                                 "json", "-show_streams", path])
-        if res := result[1]:
-            LOGGER.warning(f'Get Video Streams: {res}')
+        result = check_output(["ffprobe", "-hide_banner", "-loglevel", "error", "-print_format",
+                               "json", "-show_streams", path]).decode('utf-8')
     except Exception as e:
-        LOGGER.error(f'Get Video Streams: {e}. Mostly File not found!')
-        return False
-    fields = eval(result[0]).get('streams')
+        LOGGER.error(f'{e}. Mostly file not found!')
+        return is_video, is_audio
+    fields = eval(result).get('streams')
     if fields is None:
-        LOGGER.error(f"get_video_streams: {result}")
-        return False
-    videos = 0
-    audios = 0
+        LOGGER.error(f"get_media_streams: {result}")
+        return is_video, is_audio
     for stream in fields:
         if stream.get('codec_type') == 'video':
-            videos += 1
+            is_video = True
         elif stream.get('codec_type') == 'audio':
-            audios += 1
-    return videos > 1 or audios > 1
+            is_audio = True
+    return is_video, is_audio
+
 
 
 async def get_media_info(path):
@@ -120,7 +125,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     parts = ceil(size/leech_split_size)
     if ((user_dict and user_dict.get('equal_splits')) or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ceil(size/parts) + 1000
-    if is_multi_streams(path)[0]:
+    if get_media_streams(path)[0]:
         duration = get_media_info(path)[0]
         base_name, extension = ospath.splitext(file_)
         split_size = split_size - 5000000
