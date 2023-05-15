@@ -1,15 +1,13 @@
+from os import path as ospath
+from aiofiles.os import remove as aioremove, path as aiopath, mkdir
+from time import time
+from re import search as re_search
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import PIPE
-from os import path as ospath
-from re import search as re_search
-from time import time
-
-from aiofiles.os import mkdir
-from aiofiles.os import path as aiopath
-from aiofiles.os import remove as aioremove
 
 from bot import LOGGER, MAX_SPLIT_SIZE, config_dict, user_data
-from bot.helper.ext_utils.bot_utils import cmd_exec, sync_to_async
+from bot.helper.ext_utils.bot_utils import cmd_exec
+from bot.helper.ext_utils.bot_utils import sync_to_async
 from bot.helper.ext_utils.fs_utils import ARCH_EXT, get_mime_type
 
 
@@ -97,7 +95,7 @@ async def take_ss(video_file, duration):
     if duration == 0:
         duration = 3
     duration = duration // 2
-    cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
+    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
            "-i", video_file, "-vf", "thumbnail", "-frames:v", "1", des_dir]
     status = await create_subprocess_exec(*cmd, stderr=PIPE)
     if await status.wait() != 0 or not await aiopath.exists(des_dir):
@@ -119,7 +117,6 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     user_dict = user_data.get(user_id, {})
     leech_split_size = user_dict.get(
         'split_size') or config_dict['LEECH_SPLIT_SIZE']
-    leech_split_size = min(leech_split_size, MAX_SPLIT_SIZE)
     parts = -(-size // leech_split_size)
     if (user_dict.get('equal_splits') or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ((size + parts - 1) // parts) + 1000
@@ -132,7 +129,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
         while i <= parts or start_time < duration - 4:
             parted_name = f"{base_name}.part{i:03}{extension}"
             out_path = ospath.join(dirpath, parted_name)
-            cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
+            cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
                    "-fs", str(split_size), "-map", "0", "-map_chapters", "-1", "-async", "1", "-strict",
                    "-2", "-c", "copy", out_path]
             if not multi_streams:
