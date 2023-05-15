@@ -108,84 +108,80 @@ async def take_ss(video_file, duration):
     return des_dir
 
 
-async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False, multi_streams=True):
-    if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
-        return False
+async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False, noMap=False):
     if listener.seed and not listener.newDir:
-        dirpath = f"{dirpath}/splited_files_mltb"
-        if not await aiopath.exists(dirpath):
-            await mkdir(dirpath)
+        dirpath = f"{dirpath}/splited_files_wz"
+        if not ospath.exists(dirpath):
+            mkdir(dirpath)
     user_id = listener.message.from_user.id
-    user_dict = user_data.get(user_id, {})
-    leech_split_size = user_dict.get(
-        'split_size') or config_dict['LEECH_SPLIT_SIZE']
-    leech_split_size = min(leech_split_size, MAX_SPLIT_SIZE)
-    parts = -(-size // leech_split_size)
-    if (user_dict.get('equal_splits') or config_dict['EQUAL_SPLITS']) and not inLoop:
-        split_size = ((size + parts - 1) // parts) + 1000
-    if (await get_document_type(path))[0]:
-        if multi_streams:
-            multi_streams = await is_multi_streams(path)
-        duration = (await get_media_info(path))[0]
+    user_dict = user_data.get(user_id, False)
+    leech_split_size = int((user_dict and user_dict.get('split_size')) or config_dict['TG_SPLIT_SIZE'])
+    parts = ceil(size/leech_split_size)
+    if ((user_dict and user_dict.get('equal_splits')) or config_dict['EQUAL_SPLITS']) and not inLoop:
+        split_size = ceil(size/parts) + 1000
+    if get_media_streams(path)[0]:
+        duration = get_media_info(path)[0]
         base_name, extension = ospath.splitext(file_)
-        split_size -= 5000000
-        while i <= parts or start_time < duration - 4:
-            parted_name = f"{base_name}.part{i:03}{extension}"
+        split_size = split_size - 5000000
+        while i <= parts:
+            parted_name = f"{str(base_name)}.part{str(i).zfill(3)}{str(extension)}"
             out_path = ospath.join(dirpath, parted_name)
-            cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
-                   "-fs", str(split_size), "-map", "0", "-map_chapters", "-1", "-async", "1", "-strict",
-                   "-2", "-c", "copy", out_path]
-            if not multi_streams:
-                del cmd[10]
-                del cmd[10]
-            if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
+            if not noMap:
+                listener.suproc = Popen(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(start_time),
+                                         "-i", path, "-fs", str(split_size), "-map", "0", "-map_chapters", "-1",
+                                         "-c", "copy", out_path])
+            else:
+                listener.suproc = Popen(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(start_time),
+                                          "-i", path, "-fs", str(split_size), "-map_chapters", "-1", "-c", "copy",
+                                          out_path])
+            listener.suproc.wait()
+            if listener.suproc.returncode == -9:
                 return False
-            listener.suproc = await create_subprocess_exec(*cmd, stderr=PIPE)
-            code = await listener.suproc.wait()
-            if code == -9:
-                return False
-            elif code != 0:
-                err = (await listener.suproc.stderr.read()).decode().strip()
+            elif listener.suproc.returncode != 0 and not noMap:
+                LOGGER.warning(f"Retrying without map, -map 0 not working in all situations. Path: {path}")
                 try:
-                    await aioremove(out_path)
+                    osremove(out_path)
                 except:
                     pass
-                if multi_streams:
-                    LOGGER.warning(
-                        f"{err}. Retrying without map, -map 0 not working in all situations. Path: {path}")
-                    return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, False)
-                else:
-                    LOGGER.warning(
-                        f"{err}. Unable to split this video, if it's size less than {MAX_SPLIT_SIZE} will be uploaded as it is. Path: {path}")
+                return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
+            elif listener.suproc.returncode != 0:
+                LOGGER.warning(f"Unable to split this video, if it's size less than {config_dict['TG_SPLIT_SIZE']} will be uploaded as it is. Path: {path}")
+                try:
+                    osremove(out_path)
+                except:
+                    pass
                 return "errored"
-            out_size = await aiopath.getsize(out_path)
-            if out_size > MAX_SPLIT_SIZE:
-                dif = out_size - MAX_SPLIT_SIZE
-                split_size -= dif + 5000000
-                await aioremove(out_path)
-                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, )
-            lpd = (await get_media_info(out_path))[0]
+            out_size = get_path_size(out_path)
+            if out_size > (config_dict['TG_SPLIT_SIZE'] + 1000):
+                dif = out_size - (config_dict['TG_SPLIT_SIZE'] + 1000)
+                split_size = split_size - dif + 5000000
+                osremove(out_path)
+                return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, noMap)
+            lpd = get_media_info(out_path)[0]
             if lpd == 0:
-                LOGGER.error(
-                    f'Something went wrong while splitting, mostly file is corrupted. Path: {path}')
+                LOGGER.error(f'Something went wrong while splitting mostly file is corrupted. Path: {path}')
                 break
             elif duration == lpd:
-                LOGGER.warning(
-                    f"This file has been splitted with default stream and audio, so you will only see one part with less size from orginal one because it doesn't have all streams and audios. This happens mostly with MKV videos. Path: {path}")
-                break
-            elif lpd <= 3:
-                await aioremove(out_path)
+                if not noMap:
+                    LOGGER.warning(f"Retrying without map, -map 0 not working in all situations. Path: {path}")
+                    try:
+                        osremove(out_path)
+                    except:
+                        pass
+                    return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
+                else:
+                    LOGGER.warning(f"This file has been splitted with default stream and audio, so you will only see one part with less size from orginal one because it doesn't have all streams and audios. This happens mostly with MKV videos. noMap={noMap}. Path: {path}")
+                    break
+            elif lpd <= 4:
+                osremove(out_path)
                 break
             start_time += lpd - 3
-            i += 1
+            i = i + 1
     else:
         out_path = ospath.join(dirpath, f"{file_}.")
-        listener.suproc = await create_subprocess_exec("split", "--numeric-suffixes=1", "--suffix-length=3",
-                                                       f"--bytes={split_size}", path, out_path, stderr=PIPE)
-        code = await listener.suproc.wait()
-        if code == -9:
+        listener.suproc = Popen(["split", "--numeric-suffixes=1", "--suffix-length=3",
+                                f"--bytes={split_size}", path, out_path])
+        listener.suproc.wait()
+        if listener.suproc.returncode == -9:
             return False
-        elif code != 0:
-            err = (await listener.suproc.stderr.read()).decode().strip()
-            LOGGER.error(err)
     return True
