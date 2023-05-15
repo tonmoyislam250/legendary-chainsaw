@@ -1,8 +1,4 @@
-FROM 5hojib/luna:latest
-
+FROM ghcr.io/tonmoyislam250/alpinedocker:jmdkh2
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
-
-COPY . .
-
-CMD ["bash", "start.sh"]
+CMD ["ash", "start.sh"]
