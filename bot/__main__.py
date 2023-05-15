@@ -1,117 +1,63 @@
 #!/usr/bin/env python3
-import subprocess, os, requests
 from asyncio import create_subprocess_exec, gather
 from os import execl as osexecl
 from signal import SIGINT, signal
 from sys import executable
-from time import time, sleep
-from platform import python_version
+from time import time
+from uuid import uuid4
 
 from aiofiles import open as aiopen
 from aiofiles.os import path as aiopath
 from aiofiles.os import remove as aioremove
-from psutil import (boot_time, cpu_count, cpu_percent, disk_usage,
-                    net_io_counters, swap_memory, virtual_memory)
+from psutil import boot_time, cpu_count, cpu_percent, disk_usage, net_io_counters, swap_memory, virtual_memory
 from pyrogram.filters import command
 from pyrogram.handlers import MessageHandler
-from uuid import uuid4
-from bot import (DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER, HEROKU_APP_NAME, HEROKU_API_KEY,
-                 STOP_DUPLICATE_TASKS, Interval, QbInterval, bot, botStartTime,
-                 user_data, aria2, get_client, 
-                 config_dict, scheduler)
-from bot.helper.listeners.aria2_listener import start_aria2_listener
 
-from .helper.ext_utils.bot_utils import (cmd_exec, get_readable_file_size,
-                                         get_readable_time, set_commands,
-                                         sync_to_async)
+from bot import DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER, STOP_DUPLICATE_TASKS, Interval, QbInterval, bot, user_data, botStartTime, config_dict, scheduler, alive
+
+from bot.helper.listeners.aria2_listener import start_aria2_listener
+from .helper.ext_utils.bot_utils import cmd_exec, get_readable_file_size, get_readable_time, set_commands, sync_to_async
 from .helper.ext_utils.db_handler import DbManger
 from .helper.ext_utils.fs_utils import clean_all, exit_clean_up, start_cleanup
 from .helper.telegram_helper.bot_commands import BotCommands
 from .helper.telegram_helper.filters import CustomFilters
-from .helper.telegram_helper.message_utils import (editMessage, sendFile,
-                                                   sendMessage)
-from .modules import (anonymous, authorize, bot_settings, cancel_mirror,
-                      category_select, clone, eval, gd_count, gd_delete,
-                      gd_list, leech_del, mirror_leech, rmdb, rss,
-                      save_message, shell, status, torrent_search,
-                      torrent_select, users_settings, speedtest, ytdlp)
+from .helper.telegram_helper.message_utils import editMessage, sendFile, sendMessage, auto_delete_message
+from .modules import anonymous, authorize, bot_settings, cancel_mirror, category_select, clone, eval, gd_count, gd_delete, gd_list, leech_del, mirror_leech, rmdb, rss, save_message, shell, status, torrent_search, torrent_select, users_settings, ytdlp
 
 start_aria2_listener()
 
-def getos():
-  with open('/etc/os-release') as inf:
-    for line in inf:
-      line = line.split('=')
-      line[0] = line[0].strip()
-      if line[0] == "NAME":
-        OSNAME = line[1].strip().replace('"', '')
-      if line[0] == "VERSION_ID":
-        OSNAME = OSNAME +' '+line[1]
-  return OSNAME.strip()
-
-async def restartdyno(client, message):
-  headers = {
-    'Accept': 'application/vnd.heroku+json; version=3',
-    'Authorization': f'Bearer {HEROKU_API_KEY}'
-  }
-  url = f'https://api.heroku.com/apps/{HEROKU_APP_NAME}/dynos'
-  response = requests.delete(url, headers=headers)
-  msg = f"{HEROKU_APP_NAME} named app's DYNO Restarted"
-  if response.status_code == 202:
-   await sendMessage(message, msg)
-  else:
-   await sendMessage(message, f'Error restarting dyno: {response.status_code}')
-  restart_complete = False
-  while not restart_complete:
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        dynos = response.json()
-        if all(dyno['state'] == 'idle' for dyno in dynos):
-            restart_complete = True
-    sleep(5)
-  await sendMessage(message, f'Bot Dyno restarted!!')
-
-async def versionInfo(client, message):
-  output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
-  versionffmpeg = output.split('\n')[0].split(' ')[2]
-  version = f'<b>Python Version</b>: {python_version()}\n'\
-            f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
-            f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'\
-            f'<b>FFMPEG Version</b>: {versionffmpeg}\n'\
-            f'<b>Operating System</b>: {getos()}\n'
-  await sendMessage(message, version)
-
-
-async def stats(client, message):
+async def stats(_, message):
     total, used, free, disk = disk_usage('/')
-    swap = swap_memory()
     memory = virtual_memory()
-    net_io = net_io_counters()
+    currentTime = get_readable_time(time() - botStartTime)
+    mem_p = memory.percent
+    osUptime = get_readable_time(time() - boot_time())
+    cpuUsage = cpu_percent(interval=0.5)
     if await aiopath.exists('.git'):
-        last_commit = await cmd_exec("git log -1 --date=short --pretty=format:'%cd <b>From</b> %cr'", True)
-        last_commit = last_commit[0]
-    else:
-        last_commit = 'No UPSTREAM_REPO'
-    stats = f'<b>Commit Date</b>: {last_commit}\n\n'\
-            f'<b>Bot Uptime</b>: {get_readable_time(time() - botStartTime)}\n'\
-            f'<b>OS Uptime</b>: {get_readable_time(time() - boot_time())}\n\n'\
-            f'<b>Total Disk Space </b>: {get_readable_file_size(total)}\n'\
-            f'<b>Used</b>: {get_readable_file_size(used)} | <b>Free</b>: {get_readable_file_size(free)}\n\n'\
-            f'<b>Upload</b>: {get_readable_file_size(net_io.bytes_sent)}\n'\
-            f'<b>Download</b>: {get_readable_file_size(net_io.bytes_recv)}\n\n'\
-            f'<b>CPU</b>: {cpu_percent(interval=0.5)}%\n'\
-            f'<b>RAM</b>: {memory.percent}%\n'\
-            f'<b>DISK</b>: {disk}%\n\n'\
-            f'<b>Physical Cores</b>: {cpu_count(logical=False)}\n'\
-            f'<b>Total Cores</b>: {cpu_count(logical=True)}\n\n'\
-            f'<b>SWAP</b>: {get_readable_file_size(swap.total)} | <b>Used</b>: {swap.percent}%\n'\
-            f'<b>Memory Total</b>: {get_readable_file_size(memory.total)}\n'\
-            f'<b>Memory Free</b>: {get_readable_file_size(memory.available)}\n'\
-            f'<b>Memory Used</b>: {get_readable_file_size(memory.used)}\n'
+        commit_id = (await cmd_exec("git log -1 --pretty=format:'%h'", True))[0]
+        commit_from = (await cmd_exec("git log -1 --date=short --pretty=format:'%cr'", True))[0]
+        commit_date = (await cmd_exec("git log -1 --date=format:'%d %B %Y' --pretty=format:'%ad'", True))[0]
+        commit_time = (await cmd_exec("git log -1 --date=format:'%I:%M:%S %p' --pretty=format:'%ad'", True))[0]
+        commit_name = (await cmd_exec("git log -1 --pretty=format:'%s'", True))[0]
+    stats = f'<b><u>REPOSITORY INFO</u></b>\n\n' \
+            f'<b>• Last commit: </b>{commit_id}\n'\
+            f'<b>• Commit date:</b> {commit_date}\n'\
+            f'<b>• Commited on: </b>{commit_time}\n'\
+            f'<b>• From now: </b>{commit_from}\n'\
+            f'<b>• Changelog: </b>{commit_name}\n'\
+            f'\n'\
+            f'<b><u>SYSTEM INFO</u></b>\n\n'\
+            f'<b>• Bot uptime:</b> {currentTime}\n'\
+            f'<b>• System uptime:</b> {osUptime}\n'\
+            f'<b>• CPU usage:</b> {cpuUsage}%\n'\
+            f'<b>• RAM usage:</b> {mem_p}%\n'\
+            f'<b>• Disk usage:</b> {disk}%\n'\
+            f'<b>• Free disk space:</b> {get_readable_file_size(free)}\n'\
+            f'<b>• Total disk space:</b> {get_readable_file_size(total)}\n'
     await sendMessage(message, stats)
 
-
-async def start(client, message):
+async def start(_, message):
+    token_timeout = config_dict['TOKEN_TIMEOUT']
     if len(message.command) > 1:
         userid = message.from_user.id
         input_token = message.command[1]
@@ -119,21 +65,43 @@ async def start(client, message):
             return await sendMessage(message, 'Who are you?')
         data = user_data[userid]
         if 'token' not in data or data['token'] != input_token:
-            return await sendMessage(message, 'This is a token already expired')
+            return await sendMessage(message, 'This token is already expired')
         data['token'] = str(uuid4())
         data['time'] = time()
         user_data[userid].update(data)
-        return await sendMessage(message, 'Token refreshed successfully!')
+        time_str = format_validity_time(token_timeout)
+        return await sendMessage(message, f'Congratulations! Token refreshed successfully!\n\n<b>It will expire after</b> {time_str}') 
     elif config_dict['DM_MODE']:
-        start_string = 'Bot Started.\n' \
-            'Now I will send your files and links here.\n'
+        start_string = f'<b>Welcome to the Era of Luna!</b>\n\nNow I will send your files or links here.\n'
     else:
-        start_string = '🌹 Welcome To One Of A Modified Anasty Mirror Bot\n' \
-            'This bot can Mirror all your links To Google Drive!\n'
+        start_string = f'<b>Welcome to the Era of Luna!</b>\n\nThis bot can Mirror all your links To Google Drive!\n'
+              
     await sendMessage(message, start_string)
 
+def format_validity_time(validity_time):
+    days = validity_time // (24 * 3600)
+    validity_time = validity_time % (24 * 3600)
+    hours = validity_time // 3600
+    validity_time %= 3600
+    minutes = validity_time // 60
+    validity_time %= 60
+    seconds = validity_time
+    time_str = ''
+    if days > 0:
+        suffix = 's' if days > 1 else ''
+        time_str += f"{days} day{suffix} "
+    if hours > 0:
+        suffix = 's' if hours > 1 else ''
+        time_str += f"{hours} hour{suffix} "
+    if minutes > 0:
+        suffix = 's' if minutes > 1 else ''
+        time_str += f"{minutes} minute{suffix} "
+    suffix = 's' if seconds > 1 else ''
+    time_str += f"{seconds} second{suffix}"
+    return time_str
 
-async def restart(client, message):
+
+async def restart(_, message):
     restart_message = await sendMessage(message, "Restarting...")
     if scheduler.running:
         scheduler.shutdown(wait=False)
@@ -141,22 +109,22 @@ async def restart(client, message):
         if interval:
             interval[0].cancel()
     await sync_to_async(clean_all)
-    proc1 = await create_subprocess_exec('pkill', '-9', '-f', 'gunicorn|mrbeast|pewdiepie|mutahar|rclone')
-    proc2 = await create_subprocess_exec('uname', '-a')
+    proc1 = await create_subprocess_exec('pkill', '-9', '-f', 'gunicorn|aria2c|qbittorrent-nox|ffmpeg|rclone')
+    proc2 = await create_subprocess_exec('python3', 'update.py')
     await gather(proc1.wait(), proc2.wait())
     async with aiopen(".restartmsg", "w") as f:
         await f.write(f"{restart_message.chat.id}\n{restart_message.id}\n")
     osexecl(executable, executable, "-m", "bot")
 
 
-async def ping(client, message):
+async def ping(_, message):
     start_time = int(round(time() * 1000))
     reply = await sendMessage(message, "Starting Ping")
     end_time = int(round(time() * 1000))
     await editMessage(reply, f'{end_time - start_time} ms')
 
 
-async def log(client, message):
+async def log(_, message):
     await sendFile(message, 'log.txt')
 
 help_string = f'''
@@ -208,8 +176,9 @@ NOTE: Try each command without any argument to see more detalis.
 '''
 
 
-async def bot_help(client, message):
-    await sendMessage(message, help_string)
+async def bot_help(_, message):
+    reply_message = await sendMessage(message, help_string)
+    await auto_delete_message(message, reply_message)
 
 
 async def restart_notification():
@@ -271,10 +240,6 @@ async def main():
         BotCommands.HelpCommand) & CustomFilters.authorized))
     bot.add_handler(MessageHandler(stats, filters=command(
         BotCommands.StatsCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(versionInfo, filters=command(
-        BotCommands.VerCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(restartdyno, filters=command(
-        BotCommands.DynoCommand) & CustomFilters.authorized))
     LOGGER.info("Bot Started!")
     signal(SIGINT, exit_clean_up)
 

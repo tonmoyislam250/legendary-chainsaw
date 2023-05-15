@@ -12,7 +12,7 @@ def get_download(gid):
     except Exception as e:
         LOGGER.error(f'{e}: Aria2c, Error while getting torrent info')
 
-engine_ = f"Aria2c v{aria2.client.get_version()['version']}"
+engine_ = "Aria2c"
 
 class Aria2Status:
 
@@ -52,7 +52,7 @@ class Aria2Status:
         return self.__download.total_length_string()
 
     def eta(self):
-        return self.__download.eta_string()
+        return get_readable_time(int(self.__download.eta.total_seconds()))
 
     def status(self):
         self.__update()

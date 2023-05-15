@@ -22,7 +22,7 @@ aria2 = ariaAPI(ariaClient(host="http://localhost", port=6800, secret=""))
 
 LOGGER = getLogger(__name__)
 
-rawowners = "<h1 style='text-align: center'>See my Channel <a href='https://t.me/JMDKH_Team'>@Telegram</a><br><br>By<br><br><a href='https://github.com/junedkh'>Juned KH</a></h1>"
+rawowners = "<h1 style='text-align: center'>Modified by <a href='https://github.com/5hojib'>5hojib</a></h1>"
 
 pin_entry = '''
     <section>
@@ -88,8 +88,8 @@ rawindexpage = '''
         </div>
         <h2 class="name">Qbittorrent Selection</h2>
         <div class="social">
-            <a href="https://www.github.com/junedkh"><i class="fab fa-github"></i></a>
-            <a href="https://t.me/JMDKH_Team"><i class="fab fa-telegram"></i></a>
+            <a href="https://www.github.com/5hojib"><i class="fab fa-github"></i></a>
+            <a href="https://t.me/JuniorXcientist"><i class="fab fa-telegram"></i></a>
         </div>
     </header>
     <!-- pin_entry -->
@@ -332,14 +332,6 @@ rawindexpage = '''
         });
     </script>
 </body>
-
-<footer style="height: 30%;">
-    <iframe data-aa="1856195"
-        src="//acceptable.a-ads.com/1856195?size=Adaptive&background_color=0d1117&title_color=ffffff&link_color=ffffff"
-        style="border:0px; padding:0; width:100%; height:100%; overflow:hidden; background-color: transparent;">
-    </iframe>
-</footer>
-
 </html>
 '''
 stlye1 = '''

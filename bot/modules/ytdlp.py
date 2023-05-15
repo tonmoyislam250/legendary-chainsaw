@@ -32,7 +32,7 @@ from bot.helper.telegram_helper.message_utils import (anno_checker,
                                                       open_category_btns,
                                                       request_limiter,
                                                       sendLogMessage,
-                                                      sendMessage)
+                                                      sendMessage, auto_delete_message)
 
 
 @new_task
@@ -296,7 +296,7 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
     async def __run_multi():
         if multi <= 1:
             return
-        await sleep(4)
+        await sleep(1)
         nextmsg = await client.get_messages(chat_id=message.chat.id, message_ids=message.reply_to_message_id + 1)
         ymsg = mssg.split(maxsplit=mi+1)
         ymsg[mi] = f'{multi - 1}'
@@ -307,7 +307,7 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
         nextmsg.from_user = message.from_user
         if message.sender_chat:
             nextmsg.sender_chat = message.sender_chat
-        await sleep(4)
+        await sleep(1)
         _ytdl(client, nextmsg, isZip, isLeech, sameDir)
 
     path = f'{DOWNLOAD_DIR}{message.id}{folder_name}'
@@ -329,7 +329,7 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
         0].strip() if len(rcf) > 1 else None
 
     up = mssg.split(' up: ', 1)
-    up = re_split(' n: | pswd: | rcf: | opt: ', up[1])[
+    up = re_split(' n: | pswd: | rcf: | opt: | index: | id: ', up[1])[
         0].strip() if len(up) > 1 else None
 
     drive_id = mssg.split(' id: ', 1)
@@ -367,7 +367,8 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
                 tag = reply_to.from_user.mention
 
     if not is_url(link):
-        await sendMessage(message, YT_HELP_MESSAGE.format_map({'cmd': message.command[0], 'fmg': '{"mutahar": ["-threads", "4"]}'}))
+        reply_message = await sendMessage(message, YT_HELP_MESSAGE.format_map({'cmd': message.command[0], 'fmg': '{"ffmpeg": ["-threads", "4"]}'}))
+        await auto_delete_message(message, reply_message)
         await delete_links(message)
         return
     if not message.from_user:
@@ -445,14 +446,16 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
     if 'mdisk.me' in link:
         name, link = await _mdisk(link, name)
 
-    options = {'usenetrc': True,
-               'cookiefile': 'cookies.txt', 'playlist_items': '0'}
+    options = {'usenetrc': True, 'cookiefile': 'cookies.txt'}
     if opt:
         yt_opt = opt.split('|')
         for ytopt in yt_opt:
             key, value = map(str.strip, ytopt.split(':', 1))
             if value.startswith('^'):
-                value = float(value.split('^')[1])
+                if '.' in value or value == 'inf':
+                    value = float(value.split('^')[1])
+                else:
+                    value = int(value.split('^')[1])
             elif value.lower() == 'true':
                 value = True
             elif value.lower() == 'false':
@@ -460,6 +463,8 @@ async def _ytdl(client, message, isZip=False, isLeech=False, sameDir={}):
             elif value.startswith(('{', '[', '(')) and value.endswith(('}', ']', ')')):
                 value = eval(value)
             options[key] = value
+
+        options['playlist_items'] = '0'
 
     try:
         result = await sync_to_async(extract_info, link, options)

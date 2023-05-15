@@ -35,8 +35,6 @@ from bot.helper.telegram_helper.message_utils import (editMessage, sendFile,
 from bot.modules.rss import addJob
 from bot.modules.torrent_search import initiate_search_tools
 
-PORT = environ.get('PORT')
-
 START = 0
 STATE = 'view'
 handler_dict = {}
@@ -46,7 +44,7 @@ default_values = {'AUTO_DELETE_MESSAGE_DURATION': 30,
                   'RSS_DELAY': 900,
                   'STATUS_UPDATE_INTERVAL': 10,
                   'SEARCH_LIMIT': 0,
-                  'UPSTREAM_BRANCH': 'master'}
+                  'UPSTREAM_BRANCH': 'main'}
 
 
 async def load_config():
@@ -277,15 +275,15 @@ async def load_config():
     if len(BASE_URL) == 0:
         BASE_URL = ''
     else:
-        await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
+        await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{BASE_URL_PORT} --worker-class gevent")
 
     UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
     if len(UPSTREAM_REPO) == 0:
-        UPSTREAM_REPO = ''
+        UPSTREAM_REPO = ' https://github.com/5hojib/Luna'
 
     UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH', '')
     if len(UPSTREAM_BRANCH) == 0:
-        UPSTREAM_BRANCH = 'master'
+        UPSTREAM_BRANCH = 'main'
 
     LOG_CHAT_ID = environ.get('LOG_CHAT_ID', '')
     if LOG_CHAT_ID.startswith('-100'):
@@ -334,9 +332,6 @@ async def load_config():
 
     if not STOP_DUPLICATE_TASKS and DATABASE_URL:
         DbManger().clear_download_links()
-
-    DISABLE_DRIVE_LINK = environ.get('DISABLE_DRIVE_LINK', '')
-    DISABLE_DRIVE_LINK = DISABLE_DRIVE_LINK.lower() == 'true'
 
     DISABLE_LEECH = environ.get('DISABLE_LEECH', '')
     DISABLE_LEECH = DISABLE_LEECH.lower() == 'true'
@@ -501,7 +496,6 @@ async def load_config():
         "ENABLE_RATE_LIMIT": ENABLE_RATE_LIMIT,
         "ENABLE_MESSAGE_FILTER": ENABLE_MESSAGE_FILTER,
         "STOP_DUPLICATE_TASKS": STOP_DUPLICATE_TASKS,
-        "DISABLE_DRIVE_LINK": DISABLE_DRIVE_LINK,
         "SET_COMMANDS": SET_COMMANDS,
         "DISABLE_LEECH": DISABLE_LEECH,
         "REQUEST_LIMITS": REQUEST_LIMITS,
@@ -651,7 +645,7 @@ async def edit_variable(client, message, pre_message, key):
         value = int(value)
         if config_dict['BASE_URL']:
             await (await create_subprocess_exec("pkill", "-9", "-f", "gunicorn")).wait()
-            await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
+            await create_subprocess_shell(f"gunicorn web.wserver:app --bind 0.0.0.0:{value} --worker-class gevent")
     elif key == 'EXTENSION_FILTER':
         fx = value.split()
         GLOBAL_EXTENSION_FILTER.clear()
@@ -696,7 +690,7 @@ async def edit_variable(client, message, pre_message, key):
         await set_commands(client)
 
 
-async def edit_aria(client, message, pre_message, key):
+async def edit_aria(_, message, pre_message, key):
     handler_dict[message.chat.id] = False
     value = message.text
     if key == 'newkey':
@@ -722,7 +716,7 @@ async def edit_aria(client, message, pre_message, key):
         await DbManger().update_aria2(key, value)
 
 
-async def edit_qbit(client, message, pre_message, key):
+async def edit_qbit(_, message, pre_message, key):
     handler_dict[message.chat.id] = False
     value = message.text
     if value.lower() == 'true':
@@ -741,7 +735,7 @@ async def edit_qbit(client, message, pre_message, key):
         await DbManger().update_qbittorrent(key, value)
 
 
-async def update_private_file(client, message, pre_message):
+async def update_private_file(_, message, pre_message):
     handler_dict[message.chat.id] = False
     if not message.media and (file_name := message.text):
         fn = file_name.rsplit('.zip', 1)[0]
@@ -941,7 +935,7 @@ async def edit_bot_settings(client, query):
             value = 80
             if config_dict['BASE_URL']:
                 await (await create_subprocess_exec("pkill", "-9", "-f", "gunicorn")).wait()
-                await create_subprocess_shell("gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent")
+                await create_subprocess_shell("gunicorn web.wserver:app --bind 0.0.0.0:80 --worker-class gevent")
         elif data[2] == 'GDRIVE_ID':
             if 'Main' in list_drives_dict:
                 del list_drives_dict['Main']
@@ -1105,7 +1099,7 @@ async def edit_bot_settings(client, query):
         await message.delete()
 
 
-async def bot_settings(client, message):
+async def bot_settings(_, message):
     msg, button = await get_buttons()
     globals()['START'] = 0
     await sendMessage(message, msg, button)

@@ -15,7 +15,7 @@ def get_download(client, tag):
             f'{e}: Qbittorrent, while getting torrent info. Tag: {tag}')
 
 
-engine_ = f"qBittorrent {get_client().app.version}"
+engine_ = "qBittorrent"
 
 
 class QbittorrentStatus:
@@ -93,7 +93,7 @@ class QbittorrentStatus:
         return self
 
     def gid(self):
-        return self.hash()[:12]
+        return self.hash()[:8]
 
     def hash(self):
         self.__update()
@@ -108,7 +108,7 @@ class QbittorrentStatus:
     async def cancel_download(self):
         self.__update()
         await sync_to_async(self.__client.torrents_pause, torrent_hashes=self.__info.hash)
-        if self.status() != MirrorStatus.STATUS_SEEDING:
+        if not self.seeding:
             if self.queued:
                 LOGGER.info(f'Cancelling QueueDL: {self.name()}')
                 msg = 'task have been removed from queue/download'

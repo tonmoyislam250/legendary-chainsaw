@@ -86,16 +86,15 @@ async def get_user_settings(from_user):
 
     buttons.ibutton("Close", f"userset {user_id} close")
 
-    text = f"""<u>Settings for {name}</u>
-Leech Type is <b>{ltype}</b>
-Custom Thumbnail <b>{thumbmsg}</b>
-Rclone Config <b>{rccmsg}</b>
-Leech Split Size is <b>{split_size}</b>
-Equal Splits is <b>{equal_splits}</b>
-Media Group is <b>{media_group}</b>
-Leech Prefix is <code>{escape(lprefix)}</code>
-YT-DLP Options is <b><code>{escape(ytopt)}</code></b>"""
-
+    text = f"<u>Settings for {name}</u>\n\n"\
+           f"<b>Leech Type</b>: {ltype}\n"\
+           f"<b>Custom Thumbnail</b>: {thumbmsg}\n"\
+           f"<b>Rclone Config</b>: {rccmsg}\n"\
+           f"<b>Leech Split Size</b>: {split_size}\n"\
+           f"<b>Equal Splits</b>: {equal_splits}\n"\
+           f"<b>Media Group</b>: {media_group}</b>\n"\
+           f"<b>YT-DLP Quality</b>: {escape(ytopt)}\n"\
+           f"<b>Leech Prefix</b>: {escape(lprefix)}"
     return text, buttons.build_menu(1)
 
 
@@ -104,12 +103,12 @@ async def update_user_settings(query):
     await editMessage(query.message, msg, button)
 
 
-async def user_settings(client, message):
+async def user_settings(_, message):
     msg, button = await get_user_settings(message.from_user)
     await sendMessage(message, msg, button)
 
 
-async def set_yt_options(client, message, pre_event):
+async def set_yt_options(_, message, pre_event):
     user_id = message.from_user.id
     handler_dict[user_id] = False
     value = message.text
@@ -120,7 +119,7 @@ async def set_yt_options(client, message, pre_event):
         await DbManger().update_user_data(user_id)
 
 
-async def set_prefix(client, message, pre_event):
+async def set_prefix(_, message, pre_event):
     user_id = message.from_user.id
     handler_dict[user_id] = False
     value = message.text
@@ -132,7 +131,7 @@ async def set_prefix(client, message, pre_event):
     await update_user_settings(pre_event)
 
 
-async def set_thumb(client, message, pre_event):
+async def set_thumb(_, message, pre_event):
     user_id = message.from_user.id
     handler_dict[user_id] = False
     path = "Thumbnails/"
@@ -149,7 +148,7 @@ async def set_thumb(client, message, pre_event):
         await DbManger().update_user_doc(user_id, 'thumb', des_dir)
 
 
-async def add_rclone(client, message, pre_event):
+async def add_rclone(_, message, pre_event):
     user_id = message.from_user.id
     handler_dict[user_id] = False
     path = f'{getcwd()}/rclone/'
@@ -164,7 +163,7 @@ async def add_rclone(client, message, pre_event):
         await DbManger().update_user_doc(user_id, 'rclone', des_dir)
 
 
-async def leech_split_size(client, message, pre_event):
+async def leech_split_size(_, message, pre_event):
     user_id = message.from_user.id
     handler_dict[user_id] = False
     value = min(ceil(float(message.text) * 1024 ** 3), MAX_SPLIT_SIZE)
@@ -347,13 +346,13 @@ Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp
         rmsg = f'''
 Send Leech Prefix. Timeout: 60 sec
 Examples:
-1. <code>{escape('<b>@JMDKH_Team</b>')}</code> 
+1. <code>{escape('<b>@Luna073x</b>')}</code> 
 This will give output of:
-<b>@JMDKH_Team</b>  <code>50MB.bin</code>.
+<b>@Luna073x</b>  <code>50MB.bin</code>.
 
-2. <code>{escape('<code>@JMDKH_Team</code>')}</code> 
+2. <code>{escape('<code>@Luna073x</code>')}</code> 
 This will give output of:
-<code>@JMDKH_Team</code> <code>50MB.bin</code>.
+<code>@Luna073x</code> <code>50MB.bin</code>.
 
 Check all available formatting options <a href="https://core.telegram.org/bots/api#formatting-options">HERE</a>.
         '''
@@ -403,7 +402,7 @@ Check all available formatting options <a href="https://core.telegram.org/bots/a
         await message.delete()
 
 
-async def send_users_settings(client, message):
+async def send_users_settings(_, message):
     text = message.text.split(maxsplit=1)
     userid = text[1] if len(text) > 1 else None
     if userid and not userid.isdigit():

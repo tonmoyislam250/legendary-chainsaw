@@ -6,17 +6,12 @@ from string import ascii_letters, digits
 from aiofiles.os import makedirs
 from mega import MegaApi, MegaError, MegaListener, MegaRequest, MegaTransfer
 
-from bot import (LOGGER, config_dict, download_dict, download_dict_lock,
-                 non_queued_dl, queue_dict_lock)
-from bot.helper.ext_utils.bot_utils import (async_to_sync, get_mega_link_type,
-                                            sync_to_async)
-from bot.helper.ext_utils.task_manager import (is_queued, limit_checker,
-                                               stop_duplicate_check)
+from bot import LOGGER, config_dict, download_dict, download_dict_lock, non_queued_dl, queue_dict_lock
+from bot.helper.ext_utils.bot_utils import async_to_sync, get_mega_link_type, sync_to_async
+from bot.helper.ext_utils.task_manager import is_queued, limit_checker, stop_duplicate_check
 from bot.helper.mirror_utils.status_utils.mega_download_status import MegaDownloadStatus
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
-from bot.helper.telegram_helper.message_utils import (delete_links,
-                                                      sendMessage,
-                                                      sendStatusMessage)
+from bot.helper.telegram_helper.message_utils import delete_links, sendMessage, sendStatusMessage
 
 DumpSession = None
 

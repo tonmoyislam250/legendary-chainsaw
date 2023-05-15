@@ -3,15 +3,11 @@ from asyncio import Lock
 from logging import ERROR, getLogger
 from time import time
 
-from bot import (IS_PREMIUM_USER, LOGGER, bot, download_dict,
-                 download_dict_lock, non_queued_dl, queue_dict_lock, user)
-from bot.helper.ext_utils.task_manager import (is_queued, limit_checker,
-                                               stop_duplicate_check)
+from bot import IS_PREMIUM_USER, LOGGER, bot, download_dict, download_dict_lock, non_queued_dl, queue_dict_lock, user
+from bot.helper.ext_utils.task_manager import is_queued, limit_checker, stop_duplicate_check
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
 from bot.helper.mirror_utils.status_utils.telegram_status import TelegramStatus
-from bot.helper.telegram_helper.message_utils import (delete_links,
-                                                      sendMessage,
-                                                      sendStatusMessage)
+from bot.helper.telegram_helper.message_utils import delete_links, sendMessage, sendStatusMessage
 
 global_lock = Lock()
 GLOBAL_GID = set()
@@ -43,7 +39,7 @@ class TelegramDownloadHelper:
         self.__id = file_id
         async with download_dict_lock:
             download_dict[self.__listener.uid] = TelegramStatus(
-                self, size, self.__listener.message, file_id[:12], 'dl', self.__listener.extra_details)
+                self, size, self.__listener.message, file_id[:8], 'dl', self.__listener.extra_details)
         async with queue_dict_lock:
             non_queued_dl.add(self.__listener.uid)
         if not from_queue:
@@ -89,9 +85,9 @@ class TelegramDownloadHelper:
         elif not self.__is_cancelled:
             await self.__onDownloadError('Internal error occurred')
 
-    async def add_download(self, message, path, filename):
-        if IS_PREMIUM_USER:
-            if not self.__listener.isSuperGroup:
+    async def add_download(self, message, path, filename, session):
+        if IS_PREMIUM_USER and session != 'bot' or session == 'user':
+            if not self.__listener.isSuperGroup and session != 'user':
                 await sendMessage(message, 'Use SuperGroup to download with User!')
                 return
             message = await user.get_messages(chat_id=message.chat.id, message_ids=message.id)

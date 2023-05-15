@@ -366,15 +366,15 @@ class MirrorLeechListener:
             await DbManger().remove_download(self.raw_url)
         if self.isSuperGroup and config_dict['INCOMPLETE_TASK_NOTIFIER'] and DATABASE_URL:
             await DbManger().rm_complete_task(self.message.link)
-        msg = f"<b>Name: </b><code>{escape(name)}</code>\n\n<b>Size: </b>{get_readable_file_size(size)}"
+        msg = f"<i><b>{escape(name)}</b></i>\n"
+        msg += f"\n<b>• Size: </b>{get_readable_file_size(size)}"
         LOGGER.info(f'Task Done: {name}')
         if self.isLeech:
-            msg += f'\n<b>Total Files</b>: {folders}'
-            msg += f"\n<b>Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
+            msg += f'\n<b>• Total Files</b>: {folders}'
+            msg += f"\n<b>• Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
             if mime_type != 0:
-                msg += f'\n<b>Corrupted Files</b>: {mime_type}'
-            msg += f'\n<b>#cc</b>: {self.tag}'
-            msg += f"\n<b>Upload</b>: {self.extra_details['mode']}\n\n"
+                msg += f'\n<b>• Corrupted Files</b>: {mime_type}'
+            msg += f'\n<b>• Leeched by</b>: {self.tag}\n\n'
             if not files:
                 await sendMessage(self.message, msg)
                 if self.logMessage:
@@ -412,27 +412,26 @@ class MirrorLeechListener:
                 await start_from_queued()
                 return
         else:
-            msg += f'\n\n<b>Type: </b>{mime_type}'
+            msg += f'\n<b>• Type: </b>{mime_type}'
             if mime_type == "Folder":
-                msg += f'\n<b>SubFolders: </b>{folders}'
-                msg += f'\n<b>Files: </b>{files}'
+                msg += f'\n<b>• SubFolders: </b>{folders}'
+                msg += f'\n<b>• Files: </b>{files}'
                 drive_id = GoogleDriveHelper.getIdFromUrl(link)
-                msg += f"\n\n<b>Folder id</b>: <code>{drive_id}</code>"
-            msg += f'\n\n<b>#cc</b>: {self.tag} | <b>Elapsed</b>: {get_readable_time(time() - self.extra_details["startTime"])}'
-            msg += f"\n\n<b>Upload</b>: {self.extra_details['mode']}"
+            msg += f'\n<b>• Uploaded by</b>: {self.tag}'
+            msg += f'\n<b>• Elapsed</b>: {get_readable_time(time() - self.extra_details["startTime"])}'
             if link or rclonePath and config_dict['RCLONE_SERVE_URL']:
                 buttons = ButtonMaker()
                 if link:
-                    buttons.ubutton("🔐 Drive Link", link)
+                    buttons.ubutton("Drive Link", link)
                 else:
-                    msg += f'\n\nPath: <code>{rclonePath}</code>'
+                    msg += f'\n\n<b>Path</b>: <code>{rclonePath}</code>'
                 if rclonePath and (RCLONE_SERVE_URL := config_dict['RCLONE_SERVE_URL']):
                     remote, path = rclonePath.split(':', 1)
                     url_path = url_quote(f'{path}')
                     share_url = f'{RCLONE_SERVE_URL}/{remote}/{url_path}'
                     if mime_type == "Folder":
                         share_url += '/'
-                    buttons.ubutton("🔗 Rclone Link", share_url)
+                    buttons.ubutton("Rclone Link", share_url)
                 elif not rclonePath:
                     INDEX_URL = self.index_link if self.drive_id else config_dict['INDEX_URL']
                     if INDEX_URL:
@@ -440,12 +439,12 @@ class MirrorLeechListener:
                         share_url = f'{INDEX_URL}/{url_path}'
                         if mime_type == "Folder":
                             share_url += '/'
-                            buttons.ubutton("📁 Index Link", share_url)
+                            buttons.ubutton("Index Link", share_url)
                         else:
-                            buttons.ubutton("⚡ Index Link", share_url)
+                            buttons.ubutton("Index Link", share_url)
                             if mime_type.startswith(('image', 'video', 'audio')):
                                 share_urls = f'{INDEX_URL}/{url_path}?a=view'
-                                buttons.ubutton("🌐 View Link", share_urls)
+                                buttons.ubutton("View Link", share_urls)
                 buttons = extra_btns(buttons)
                 if self.dmMessage:
                     msg += '\n\n<b>Links has been sent in your DM.</b>'
@@ -497,8 +496,7 @@ class MirrorLeechListener:
             count = len(download_dict)
             if self.uid in self.sameDir:
                 self.sameDir.remove(self.uid)
-        msg = f"{self.tag} Download: {escape(error)}\n<b>Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
-        msg += f"\n<b>Upload</b>: {self.extra_details['mode']}"
+        msg = f"{self.tag} Download: {escape(error)}\n<b>• Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
         await sendMessage(self.message, msg, button)
         if self.logMessage:
             await sendMessage(self.logMessage, msg, button)
@@ -539,8 +537,7 @@ class MirrorLeechListener:
             count = len(download_dict)
             if self.uid in self.sameDir:
                 self.sameDir.remove(self.uid)
-        msg = f"{self.tag} {escape(error)}\n<b>Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
-        msg += f"\n<b>Upload</b>: {self.extra_details['mode']}"
+        msg = f"{self.tag} {escape(error)}\n<b>• Elapsed</b>: {get_readable_time(time() - self.extra_details['startTime'])}"
         await sendMessage(self.message, msg)
         if self.logMessage:
             await sendMessage(self.logMessage, msg)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from asyncio import Lock
 from collections import OrderedDict
-from faulthandler import enable as faulthandler_enable
+#from faulthandler import enable as faulthandler_enable
 from logging import INFO, FileHandler, StreamHandler, basicConfig
 from logging import error as log_error
 from logging import getLogger
@@ -15,7 +15,6 @@ from subprocess import Popen
 from subprocess import run as srun
 from threading import Thread
 from time import sleep, time
-from requests import get as rget
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aria2p import API as ariaAPI
@@ -28,7 +27,7 @@ from qbittorrentapi import Client as qbClient
 from tzlocal import get_localzone
 from uvloop import install
 
-faulthandler_enable()
+#faulthandler_enable()
 install()
 setdefaulttimeout(600)
 
@@ -39,24 +38,6 @@ basicConfig(format='%(asctime)s - %(name)s %(levelname)s : %(message)s [%(module
             level=INFO)
 
 LOGGER = getLogger(__name__)
-
-
-
-CONFIG_FILE_URL= environ.get('CONFIG_FILE_URL')
-try:
-    if len(CONFIG_FILE_URL) == 0:
-        raise TypeError
-    try:
-        res = rget(CONFIG_FILE_URL)
-        if res.status_code == 200:
-            with open('config.env', 'wb+') as f:
-                f.write(res.content)
-        else:
-            log_error(f"Failed to download config.env {res.status_code}")
-    except Exception as e:
-        log_error(f"CONFIG_FILE_URL: {e}")
-except:
-    pass
 
 load_dotenv('config.env', override=True)
 
@@ -75,14 +56,6 @@ queued_up = {}
 categories_dict = {}
 non_queued_dl = set()
 non_queued_up = set()
-
-try:
-    if bool(environ.get('_____REMOVE_THIS_LINE_____')):
-        log_error('The README.md file there to be read! Exiting now!')
-        exit()
-except:
-    pass
-
 download_dict_lock = Lock()
 status_reply_dict_lock = Lock()
 queue_dict_lock = Lock()
@@ -198,7 +171,7 @@ USER_SESSION_STRING = environ.get('USER_SESSION_STRING', '')
 if len(USER_SESSION_STRING) != 0:
     log_info("Creating client from USER_SESSION_STRING")
     user = tgClient('user', TELEGRAM_API, TELEGRAM_HASH, session_string=USER_SESSION_STRING,
-                    parse_mode=enums.ParseMode.HTML, no_updates=True, max_concurrent_transmissions=1000).start()
+                    parse_mode=enums.ParseMode.HTML, no_updates=True).start()
     if user.me.is_bot:
         log_warning(
             "You added bot string for USER_SESSION_STRING this is not allowed! Exiting now")
@@ -322,17 +295,17 @@ if len(BASE_URL) == 0:
 
 UPSTREAM_REPO = environ.get('UPSTREAM_REPO', '')
 if len(UPSTREAM_REPO) == 0:
-    UPSTREAM_REPO = ''
+    UPSTREAM_REPO = 'https://github.com/5hojib/luna'
 
 UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH', '')
 if len(UPSTREAM_BRANCH) == 0:
-    UPSTREAM_BRANCH = 'master'
+    UPSTREAM_BRANCH = 'main'
 
 RCLONE_SERVE_URL = environ.get('RCLONE_SERVE_URL', '')
 if len(RCLONE_SERVE_URL) == 0:
     RCLONE_SERVE_URL = ''
 
-RCLONE_SERVE_PORT = environ.get('PORT', '')
+RCLONE_SERVE_PORT = environ.get('RCLONE_SERVE_PORT', '')
 RCLONE_SERVE_PORT = 8080 if len(
     RCLONE_SERVE_PORT) == 0 else int(RCLONE_SERVE_PORT)
 
@@ -385,9 +358,6 @@ ENABLE_MESSAGE_FILTER = ENABLE_MESSAGE_FILTER.lower() == 'true'
 
 STOP_DUPLICATE_TASKS = environ.get('STOP_DUPLICATE_TASKS', '')
 STOP_DUPLICATE_TASKS = STOP_DUPLICATE_TASKS.lower() == 'true'
-
-DISABLE_DRIVE_LINK = environ.get('DISABLE_DRIVE_LINK', '')
-DISABLE_DRIVE_LINK = DISABLE_DRIVE_LINK.lower() == 'true'
 
 DISABLE_LEECH = environ.get('DISABLE_LEECH', '')
 DISABLE_LEECH = DISABLE_LEECH.lower() == 'true'
@@ -483,7 +453,6 @@ config_dict = {
     "LEECH_LIMIT": LEECH_LIMIT,
     "ENABLE_MESSAGE_FILTER": ENABLE_MESSAGE_FILTER,
     "STOP_DUPLICATE_TASKS": STOP_DUPLICATE_TASKS,
-    "DISABLE_DRIVE_LINK": DISABLE_DRIVE_LINK,
     "SET_COMMANDS": SET_COMMANDS,
     "DISABLE_LEECH": DISABLE_LEECH,
     "REQUEST_LIMITS": REQUEST_LIMITS,
@@ -548,23 +517,17 @@ if ospath.exists('categories.txt'):
                 tempdict['index_link'] = ''
             categories_dict[name] = tempdict
 
-
 PORT = environ.get('PORT')
-HEROKU_API_KEY = environ.get('HEROKU_API_KEY')
-HEROKU_APP_NAME = environ.get('HEROKU_APP_NAME')
-
-if BASE_URL:
-    Popen(
-        f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT} --worker-class gevent", shell=True)
-
-srun(["pewdiepie", "-d", f"--profile={getcwd()}"])
+Popen(f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT}", shell=True)
+alive = Popen(["python3", "alive.py"])
+srun(["qbittorrent-nox", "-d", f"--profile={getcwd()}"])
 if not ospath.exists('.netrc'):
     with open('.netrc', 'w'):
         pass
 srun(["chmod", "600", ".netrc"])
 srun(["cp", ".netrc", "/root/.netrc"])
-srun(["chmod", "+x", "a2c.sh"])
-srun("./a2c.sh", shell=True)
+srun(["chmod", "+x", "aria.sh"])
+srun("./aria.sh", shell=True)
 if ospath.exists('accounts.zip'):
     if ospath.exists('accounts'):
         srun(["rm", "-rf", "accounts"])
@@ -585,7 +548,7 @@ def get_client():
 def aria2c_init():
     try:
         log_info("Initializing Aria2c")
-        link = "https://nyaa.si/download/1670263.torrent"
+        link = "https://linuxmint.com/torrents/lmde-5-cinnamon-64bit.iso.torrent"
         dl = aria2.add_uris([link], {'dir': DOWNLOAD_DIR.rstrip("/")})
         for _ in range(4):
             dl = dl.live
@@ -628,9 +591,7 @@ else:
     qb_client.app_set_preferences(qb_opt)
 
 log_info("Creating client from BOT_TOKEN")
-bot = tgClient('bot', TELEGRAM_API, TELEGRAM_HASH, bot_token=BOT_TOKEN,
-               parse_mode=enums.ParseMode.HTML, max_concurrent_transmissions=1000).start()
+bot = tgClient('bot', TELEGRAM_API, TELEGRAM_HASH, bot_token=BOT_TOKEN, workers=1000, parse_mode=enums.ParseMode.HTML).start()
 bot_loop = bot.loop
 bot_name = bot.me.username
-scheduler = AsyncIOScheduler(timezone=str(
-    get_localzone()), event_loop=bot_loop)
+scheduler = AsyncIOScheduler(timezone=str(get_localzone()), event_loop=bot_loop)
