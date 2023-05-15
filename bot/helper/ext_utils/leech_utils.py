@@ -150,7 +150,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                     osremove(out_path)
                 except:
                     pass
-                return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
+                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
             elif listener.suproc.returncode != 0:
                 LOGGER.warning(f"Unable to split this video, if it's size less than {config_dict['LEECH_SPLIT_SIZE']} will be uploaded as it is. Path: {path}")
                 try:
@@ -163,7 +163,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                 dif = out_size - (config_dict['LEECH_SPLIT_SIZE'] + 1000)
                 split_size = split_size - dif + 5000000
                 osremove(out_path)
-                return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, noMap)
+                return  await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, noMap)
             lpd = (await get_media_info(out_path))[0]
             if lpd == 0:
                 LOGGER.error(f'Something went wrong while splitting mostly file is corrupted. Path: {path}')
@@ -175,7 +175,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                         osremove(out_path)
                     except:
                         pass
-                    return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
+                    return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
                 else:
                     LOGGER.warning(f"This file has been splitted with default stream and audio, so you will only see one part with less size from orginal one because it doesn't have all streams and audios. This happens mostly with MKV videos. noMap={noMap}. Path: {path}")
                     break
