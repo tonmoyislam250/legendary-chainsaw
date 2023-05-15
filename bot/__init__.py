@@ -545,7 +545,7 @@ if not ospath.exists('.netrc'):
         pass
 srun(["chmod", "600", ".netrc"])
 srun(["cp", ".netrc", "/root/.netrc"])
-srun(["chmod", "+x", "aria.sh"])
+srun(["chmod", "+x", "a2c.sh"])
 srun("./a2c.sh", shell=True)
 if ospath.exists('accounts.zip'):
     if ospath.exists('accounts'):
