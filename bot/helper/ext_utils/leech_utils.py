@@ -163,7 +163,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                 split_size = split_size - dif + 5000000
                 osremove(out_path)
                 return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, noMap)
-            lpd = get_media_info(out_path)[0]
+            lpd = (await get_media_info(out_path))[0]
             if lpd == 0:
                 LOGGER.error(f'Something went wrong while splitting mostly file is corrupted. Path: {path}')
                 break
