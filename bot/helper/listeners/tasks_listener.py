@@ -574,4 +574,4 @@ class MirrorLeechListener:
         if not self.isClone:
             await clean_download(self.dir)
             if self.newDir:
-                await clean_download(self.newDir)</code>
+                await clean_download(self.newDir)
