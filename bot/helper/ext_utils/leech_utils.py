@@ -115,7 +115,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
             mkdir(dirpath)
     user_id = listener.message.from_user.id
     user_dict = user_data.get(user_id, False)
-    leech_split_size = int((user_dict and user_dict.get('split_size')) or config_dict['TG_SPLIT_SIZE'])
+    leech_split_size = int((user_dict and user_dict.get('split_size')) or config_dict['LEECH_SPLIT_SIZE'])
     parts = ceil(size/leech_split_size)
     if ((user_dict and user_dict.get('equal_splits')) or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ceil(size/parts) + 1000
@@ -145,15 +145,15 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                     pass
                 return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
             elif listener.suproc.returncode != 0:
-                LOGGER.warning(f"Unable to split this video, if it's size less than {config_dict['TG_SPLIT_SIZE']} will be uploaded as it is. Path: {path}")
+                LOGGER.warning(f"Unable to split this video, if it's size less than {config_dict['LEECH_SPLIT_SIZE']} will be uploaded as it is. Path: {path}")
                 try:
                     osremove(out_path)
                 except:
                     pass
                 return "errored"
             out_size = get_path_size(out_path)
-            if out_size > (config_dict['TG_SPLIT_SIZE'] + 1000):
-                dif = out_size - (config_dict['TG_SPLIT_SIZE'] + 1000)
+            if out_size > (config_dict['LEECH_SPLIT_SIZE'] + 1000):
+                dif = out_size - (config_dict['LEECH_SPLIT_SIZE'] + 1000)
                 split_size = split_size - dif + 5000000
                 osremove(out_path)
                 return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, noMap)
