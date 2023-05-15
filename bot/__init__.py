@@ -382,6 +382,8 @@ STOP_DUPLICATE_TASKS = STOP_DUPLICATE_TASKS.lower() == 'true'
 DISABLE_LEECH = environ.get('DISABLE_LEECH', '')
 DISABLE_LEECH = DISABLE_LEECH.lower() == 'true'
 
+DISABLE_DRIVE_LINK = environ.get('DISABLE_DRIVE_LINK', '')
+
 SET_COMMANDS = environ.get('SET_COMMANDS', '')
 SET_COMMANDS = SET_COMMANDS.lower() == 'true'
 
@@ -478,7 +480,8 @@ config_dict = {
     "REQUEST_LIMITS": REQUEST_LIMITS,
     "DM_MODE": DM_MODE,
     "DELETE_LINKS": DELETE_LINKS,
-    "TOKEN_TIMEOUT": TOKEN_TIMEOUT
+    "TOKEN_TIMEOUT": TOKEN_TIMEOUT,
+    "DISABLE_DRIVE_LINK": DISABLE_DRIVE_LINK
 }
 
 config_dict = OrderedDict(sorted(config_dict.items()))
