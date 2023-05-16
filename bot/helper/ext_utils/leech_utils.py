@@ -109,7 +109,7 @@ async def take_ss(video_file, duration):
     return des_dir
 
 
-async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False, multi_streams=True):
+async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False):
     if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
         return False
     if listener.seed and not listener.newDir:
@@ -150,7 +150,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                 dif = out_size - MAX_SPLIT_SIZE
                 split_size -= dif + 3000000
                 await aioremove(out_path)
-                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, )
+                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True)
             lpd = (await get_media_info(out_path))[0]
             if lpd == 0:
                 LOGGER.error(
