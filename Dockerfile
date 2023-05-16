@@ -6,7 +6,7 @@ RUN mv /usr/bin/aria2c /usr/bin/mrbeast
 RUN mv /usr/bin/qbittorrent-nox /usr/bin/pewdiepie
 RUN mv /usr/bin/ffmpeg /usr/bin/mutahar
 
-COPY requirements.txt bash .
+COPY . .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 CMD ["bash", "start.sh"]
