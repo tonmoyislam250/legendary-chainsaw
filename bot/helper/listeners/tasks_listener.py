@@ -2,7 +2,7 @@
 from asyncio import Event, create_subprocess_exec, sleep
 from html import escape
 from os import path as ospath
-from os import walk
+from os import walk, system
 from time import time
 from urllib.parse import quote as url_quote
 
@@ -138,6 +138,8 @@ class MirrorLeechListener:
                 path = f"{self.dir}/{folder_name}"
                 des_path = f"{DOWNLOAD_DIR}{self.uid}/{folder_name}"
                 await makedirs(des_path,mode=0o666,exist_ok=True)
+                print(des_path)
+                system("ls -a")
                 for item in await listdir(path):
                     if item.endswith(('.aria2', '.!qB')):
                         continue
