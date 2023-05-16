@@ -124,8 +124,6 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     if (user_dict.get('equal_splits') or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ((size + parts - 1) // parts) + 1000
     if (await get_document_type(path))[0]:
-        if multi_streams:
-            multi_streams = await is_multi_streams(path)
         duration = (await get_media_info(path))[0]
         base_name, extension = ospath.splitext(file_)
         split_size -= 5000000
@@ -135,9 +133,6 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
             cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
                    "-fs", str(split_size), "-map", "0", "-map_chapters", "-1", "-async", "1", "-strict",
                    "-2", "-c", "copy", out_path]
-            if not multi_streams:
-                del cmd[10]
-                del cmd[10]
             if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
                 return False
             listener.suproc = await create_subprocess_exec(*cmd, stderr=PIPE)
@@ -150,14 +145,6 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                     await aioremove(out_path)
                 except:
                     pass
-                if multi_streams:
-                    LOGGER.warning(
-                        f"{err}. Retrying without map, -map 0 not working in all situations. Path: {path}")
-                    return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, False)
-                else:
-                    LOGGER.warning(
-                        f"{err}. Unable to split this video, if it's size less than {MAX_SPLIT_SIZE} will be uploaded as it is. Path: {path}")
-                return "errored"
             out_size = await aiopath.getsize(out_path)
             if out_size > MAX_SPLIT_SIZE:
                 dif = out_size - MAX_SPLIT_SIZE
