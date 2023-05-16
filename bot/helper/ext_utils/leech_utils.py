@@ -3,6 +3,7 @@ from asyncio.subprocess import PIPE
 from os import path as ospath
 from re import search as re_search
 from time import time
+from math import celi
 
 from aiofiles.os import mkdir
 from aiofiles.os import path as aiopath
@@ -120,19 +121,18 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     leech_split_size = user_dict.get(
         'split_size') or config_dict['LEECH_SPLIT_SIZE']
     leech_split_size = min(leech_split_size, MAX_SPLIT_SIZE)
-    parts = -(-size // leech_split_size)
+    parts = celi(size /leech_split_size)
     if (user_dict.get('equal_splits') or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ((size + parts - 1) // parts) + 1000
     if (await get_document_type(path))[0]:
         duration = (await get_media_info(path))[0]
         base_name, extension = ospath.splitext(file_)
-        split_size -= 5000000
+        split_size -= 3000000
         while i <= parts or start_time < duration - 4:
             parted_name = f"{base_name}.part{i:03}{extension}"
             out_path = ospath.join(dirpath, parted_name)
             cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
-                   "-fs", str(split_size), "-map", "0", "-map_chapters", "-1", "-async", "1", "-strict",
-                   "-2", "-c", "copy", out_path]
+                   "-fs", str(split_size), "-map", "0", "-async", "1", "-c", "copy", out_path]
             if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
                 return False
             listener.suproc = await create_subprocess_exec(*cmd, stderr=PIPE)
@@ -148,7 +148,7 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
             out_size = await aiopath.getsize(out_path)
             if out_size > MAX_SPLIT_SIZE:
                 dif = out_size - MAX_SPLIT_SIZE
-                split_size -= dif + 5000000
+                split_size -= dif + 3000000
                 await aioremove(out_path)
                 return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, )
             lpd = (await get_media_info(out_path))[0]
