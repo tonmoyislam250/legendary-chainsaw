@@ -133,11 +133,11 @@ class MirrorLeechListener:
         multi_links = False
         async with download_dict_lock:
             if len(self.sameDir) > 1:
-                #self.sameDir.remove(self.uid)
+                self.sameDir.remove(self.uid)
                 folder_name = (await listdir(self.dir))[-1]
                 path = f"{self.dir}/{folder_name}"
-                des_path = f"{DOWNLOAD_DIR}{list(self.sameDir)[0]}/{folder_name}"
-                await makedirs(des_path, exist_ok=True)
+                des_path = f"{DOWNLOAD_DIR}{self.uid}/{folder_name}"
+                await makedirs(des_path,mode=0o666,exist_ok=True)
                 for item in await listdir(path):
                     if item.endswith(('.aria2', '.!qB')):
                         continue
@@ -155,7 +155,7 @@ class MirrorLeechListener:
             await self.onUploadError('Downloaded! Waiting for other tasks...')
             return
         if name == "None" or self.isQbit or not await aiopath.exists(f"{self.dir}/{name}"):
-            name = (await listdir(f'{DOWNLOAD_DIR}{self.uid}'))[-1]
+            name = (await listdir(self.dir))[-1]
         m_path = f"{self.dir}/{name}"
         size = await get_path_size(m_path)
         async with queue_dict_lock:
