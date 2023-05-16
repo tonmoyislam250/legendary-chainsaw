@@ -71,8 +71,6 @@ async def __onDownloadComplete(tor):
     client = download.client()
     if not listener.seed:
         await sync_to_async(client.torrents_pause, torrent_hashes=ext_hash)
-    if listener.select:
-        await print("hello.workld")
     await listener.onDownloadComplete()
     client = await sync_to_async(get_client)
     if listener.seed:
