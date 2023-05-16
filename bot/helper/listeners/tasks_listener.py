@@ -128,27 +128,7 @@ class MirrorLeechListener:
             await DbManger().add_incomplete_task(self.message.chat.id, self.message.link, self.tag)
 
     async def onDownloadComplete(self):
-        if len(self.sameDir) > 0:
-            await sleep(8)
-        multi_links = False
         async with download_dict_lock:
-            if len(self.sameDir) > 1:
-                self.sameDir.remove(self.uid)
-                folder_name = (await listdir(self.dir))[-1]
-                path = f"{self.dir}/{folder_name}"
-                des_path = f"{DOWNLOAD_DIR}{self.uid}/{folder_name}"
-                await makedirs(des_path,mode=0o666,exist_ok=True)
-                print(des_path)
-                system("ls -a")
-                for item in await listdir(path):
-                    if item.endswith(('.aria2', '.!qB')):
-                        continue
-                    item_path = f"{self.dir}/{folder_name}/{item}"
-                    if item in await listdir(des_path):
-                        await move(item_path, f'{des_path}/{self.uid}-{item}')
-                    else:
-                        await move(item_path, f'{des_path}/{item}')
-                multi_links = True
             download = download_dict[self.uid]
             name = str(download.name()).replace('/', '')
             gid = download.gid()
