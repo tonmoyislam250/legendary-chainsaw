@@ -141,10 +141,6 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                 return False
             elif code != 0:
                 err = (await listener.suproc.stderr.read()).decode().strip()
-                try:
-                    await aioremove(out_path)
-                except:
-                    pass
             out_size = await aiopath.getsize(out_path)
             if out_size > MAX_SPLIT_SIZE:
                 dif = out_size - MAX_SPLIT_SIZE
