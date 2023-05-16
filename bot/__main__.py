@@ -72,7 +72,7 @@ async def restartdyno(client, message):
   await sendMessage(message, f'Bot Dyno restarted!!')
 
 async def versionInfo(client, message):
-  output = subprocess.check_output(['mutahar', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
+  output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
   versionffmpeg = output.split('\n')[0].split(' ')[2]
   version = f'<b>Python Version</b>: {python_version()}\n'\
             f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
