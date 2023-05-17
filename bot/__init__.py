@@ -26,6 +26,24 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 LOGGER = logging.getLogger(__name__)
 
+CONFIG_FILE_URL= environ.get('CONFIG_FILE_URL')
+try:
+    if len(CONFIG_FILE_URL) == 0:
+        raise TypeError
+    try:
+        res = rget(CONFIG_FILE_URL)
+        if res.status_code == 200:
+            with open('config.env', 'wb+') as f:
+                f.write(res.content)
+        else:
+            log_error(f"Failed to download config.env {res.status_code}")
+    except Exception as e:
+        log_error(f"CONFIG_FILE_URL: {e}")
+except:
+    pass
+
+
+
 load_dotenv('config.env', override=True)
 
 def getConfig(name: str):
@@ -54,16 +72,15 @@ try:
 except KeyError:
     SERVER_PORT = 80
 
-PORT = environ.get('PORT', SERVER_PORT)
+PORT = environ.get('PORT')
 web = Popen([f"gunicorn wserver:start_server --bind 0.0.0.0:{PORT} --worker-class aiohttp.GunicornWebWorker"], shell=True)
-alive = Popen(["python3", "alive.py"])
-nox = Popen(["qbittorrent-nox", "--profile=."])
+nox = Popen(["pewdiepie", "--profile=."])
 if not ospath.exists('.netrc'):
     srun(["touch", ".netrc"])
 srun(["cp", ".netrc", "/root/.netrc"])
 srun(["chmod", "600", ".netrc"])
-srun(["chmod", "+x", "aria.sh"])
-a2c = Popen(["./aria.sh"], shell=True)
+srun(["chmod", "+x", "a2c.sh"])
+a2c = Popen(["./a2c.sh"], shell=True)
 sleep(1)
 
 Interval = []

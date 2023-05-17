@@ -161,7 +161,7 @@ def take_ss(video_file):
         duration = 3
     duration = duration // 2
     try:
-        srun(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
+        srun(["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
                         "-i", video_file, "-vframes", "1", des_dir])
     except:
         return None
@@ -181,7 +181,7 @@ def split(path, size, file_, dirpath, split_size, start_time=0, i=1, inLoop=Fals
         while i <= parts :
             parted_name = "{}.part{}{}".format(str(base_name), str(i).zfill(3), str(extension))
             out_path = ospath.join(dirpath, parted_name)
-            srun(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i",
+            srun(["mutahar", "-hide_banner", "-loglevel", "error", "-i",
                             path, "-ss", str(start_time), "-fs", str(split_size),
                             "-async", "1", "-strict", "-2", "-c", "copy", out_path])
             out_size = get_path_size(out_path)

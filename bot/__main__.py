@@ -14,7 +14,7 @@ from telegram.ext import CommandHandler
 import time as taym
 from wserver import start_server_async
 from bot import HEROKU_API_KEY, HEROKU_APP_NAME, bot, app, dispatcher, updater, botStartTime, \
-    IGNORE_PENDING_REQUESTS, IS_VPS, PORT, alive, web, a2c, \
+    IGNORE_PENDING_REQUESTS, IS_VPS, PORT, web, a2c, \
     OWNER_ID, AUTHORIZED_CHATS, LOGGER, Interval, nox, rss_session, AUTO_DELETE_MESSAGE_DURATION
 from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
 from .helper.telegram_helper.bot_commands import BotCommands
@@ -83,7 +83,6 @@ def restart(update, context):
             proc.kill()
         procs.kill()
         clean_all()
-        srun(["python3", "update.py"])
         nox.kill()
         a2cproc = psprocess(a2c.pid)
         for proc in a2cproc.children(recursive=True):
