@@ -77,7 +77,6 @@ def restart(update, context):
         restart_message = sendMessage("Normally Restarting.", context.bot, update)
         if Interval:
             Interval[0].cancel()
-        alive.kill()
         procs = psprocess(web.pid)
         for proc in procs.children(recursive=True):
             proc.kill()
