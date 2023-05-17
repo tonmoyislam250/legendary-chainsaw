@@ -1,282 +1,283 @@
-#!/usr/bin/env python3
-import subprocess, os, requests
-from asyncio import create_subprocess_exec, gather
-from os import execl as osexecl
-from signal import SIGINT, signal
+import signal
+import os
+
+from os import path as ospath, remove as osremove, execl as osexecl
+from subprocess import run as srun
+from asyncio import run as asyrun
+from threading import Thread
+from psutil import Process as psprocess
+from time import time
+from pyrogram import idle
 from sys import executable
-from time import time, sleep
-from platform import python_version
-
-from aiofiles import open as aiopen
-from aiofiles.os import path as aiopath
-from aiofiles.os import remove as aioremove
-from psutil import (boot_time, cpu_count, cpu_percent, disk_usage,
-                    net_io_counters, swap_memory, virtual_memory)
-from pyrogram.filters import command
-from pyrogram.handlers import MessageHandler
-from uuid import uuid4
-from bot import (DATABASE_URL, INCOMPLETE_TASK_NOTIFIER, LOGGER, HEROKU_APP_NAME, HEROKU_API_KEY,
-                 STOP_DUPLICATE_TASKS, Interval, QbInterval, bot, botStartTime,
-                 user_data, aria2, get_client, 
-                 config_dict, scheduler)
-from bot.helper.listeners.aria2_listener import start_aria2_listener
-
-from .helper.ext_utils.bot_utils import (cmd_exec, get_readable_file_size,
-                                         get_readable_time, set_commands,
-                                         sync_to_async)
-from .helper.ext_utils.db_handler import DbManger
-from .helper.ext_utils.fs_utils import clean_all, exit_clean_up, start_cleanup
+from telegram import ParseMode, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler
+import time as taym
+from wserver import start_server_async
+from bot import HEROKU_API_KEY, HEROKU_APP_NAME, bot, app, dispatcher, updater, botStartTime, \
+    IGNORE_PENDING_REQUESTS, IS_VPS, PORT, alive, web, a2c, \
+    OWNER_ID, AUTHORIZED_CHATS, LOGGER, Interval, nox, rss_session, AUTO_DELETE_MESSAGE_DURATION
+from .helper.ext_utils.fs_utils import start_cleanup, clean_all, exit_clean_up
 from .helper.telegram_helper.bot_commands import BotCommands
+from .helper.telegram_helper.message_utils import auto_delete_message, sendMessage, sendMarkup, editMessage, sendLogFile
+from .helper.ext_utils.telegraph_helper import telegraph
+from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
 from .helper.telegram_helper.filters import CustomFilters
-from .helper.telegram_helper.message_utils import (editMessage, sendFile,
-                                                   sendMessage)
-from .modules import (anonymous, authorize, bot_settings, cancel_mirror,
-                      category_select, clone, eval, gd_count, gd_delete,
-                      gd_list, leech_del, mirror_leech, rmdb, rss,
-                      save_message, shell, status, torrent_search,
-                      torrent_select, users_settings, speedtest, ytdlp)
+from .helper.telegram_helper.button_build import ButtonMaker
+from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, delete, \
+    speedtest, count, leech_settings, search, rss, wayback, virustotal, hash, shortener, mediainfo, stats, antispam, tshelp
+try: import heroku3
+except ModuleNotFoundError: srun("pip install heroku3", capture_output=False, shell=True)
+try: import heroku3
+except Exception as f:
+    LOGGER.warning("heroku3 cannot imported. add to your deployer requirements.txt file.")
+    LOGGER.warning(f)
+    HEROKU_APP_NAME = None
+    HEROKU_API_KEY = None
 
-start_aria2_listener()
-
-def getos():
-  with open('/etc/os-release') as inf:
-    for line in inf:
-      line = line.split('=')
-      line[0] = line[0].strip()
-      if line[0] == "NAME":
-        OSNAME = line[1].strip().replace('"', '')
-      if line[0] == "VERSION_ID":
-        OSNAME = OSNAME +' '+line[1]
-  return OSNAME.strip()
-
-async def restartdyno(client, message):
-  headers = {
-    'Accept': 'application/vnd.heroku+json; version=3',
-    'Authorization': f'Bearer {HEROKU_API_KEY}'
-  }
-  url = f'https://api.heroku.com/apps/{HEROKU_APP_NAME}/dynos'
-  response = requests.delete(url, headers=headers)
-  msg = f"{HEROKU_APP_NAME} named app's DYNO Restarted"
-  if response.status_code == 202:
-   await sendMessage(message, msg)
-  else:
-   await sendMessage(message, f'Error restarting dyno: {response.status_code}')
-  restart_complete = False
-  while not restart_complete:
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        dynos = response.json()
-        if all(dyno['state'] == 'idle' for dyno in dynos):
-            restart_complete = True
-    sleep(5)
-  await sendMessage(message, f'Bot Dyno restarted!!')
-
-async def versionInfo(client, message):
-  output = subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode('utf-8')
-  versionffmpeg = output.split('\n')[0].split(' ')[2]
-  version = f'<b>Python Version</b>: {python_version()}\n'\
-            f'<b>Aria2 Version</b>: {aria2.client.get_version()["version"]}\n'\
-            f'<b>Qbittorrent-nox Version</b>: {get_client().app.version}\n'\
-            f'<b>FFMPEG Version</b>: {versionffmpeg}\n'\
-            f'<b>Operating System</b>: {getos()}\n'
-  await sendMessage(message, version)
-
-
-async def stats(client, message):
-    total, used, free, disk = disk_usage('/')
-    swap = swap_memory()
-    memory = virtual_memory()
-    net_io = net_io_counters()
-    if await aiopath.exists('.git'):
-        last_commit = await cmd_exec("git log -1 --date=short --pretty=format:'%cd <b>From</b> %cr'", True)
-        last_commit = last_commit[0]
+def start(update, context):
+    if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
+        start_string = f'''
+This bot can mirror all your links to Google Drive.
+Type /{BotCommands.HelpCommand} to get a list of available commands
+'''
+        sendMarkup(start_string, context.bot, update, None)
     else:
-        last_commit = 'No UPSTREAM_REPO'
-    stats = f'<b>Commit Date</b>: {last_commit}\n\n'\
-            f'<b>Bot Uptime</b>: {get_readable_time(time() - botStartTime)}\n'\
-            f'<b>OS Uptime</b>: {get_readable_time(time() - boot_time())}\n\n'\
-            f'<b>Total Disk Space </b>: {get_readable_file_size(total)}\n'\
-            f'<b>Used</b>: {get_readable_file_size(used)} | <b>Free</b>: {get_readable_file_size(free)}\n\n'\
-            f'<b>Upload</b>: {get_readable_file_size(net_io.bytes_sent)}\n'\
-            f'<b>Download</b>: {get_readable_file_size(net_io.bytes_recv)}\n\n'\
-            f'<b>CPU</b>: {cpu_percent(interval=0.5)}%\n'\
-            f'<b>RAM</b>: {memory.percent}%\n'\
-            f'<b>DISK</b>: {disk}%\n\n'\
-            f'<b>Physical Cores</b>: {cpu_count(logical=False)}\n'\
-            f'<b>Total Cores</b>: {cpu_count(logical=True)}\n\n'\
-            f'<b>SWAP</b>: {get_readable_file_size(swap.total)} | <b>Used</b>: {swap.percent}%\n'\
-            f'<b>Memory Total</b>: {get_readable_file_size(memory.total)}\n'\
-            f'<b>Memory Free</b>: {get_readable_file_size(memory.available)}\n'\
-            f'<b>Memory Used</b>: {get_readable_file_size(memory.used)}\n'
-    await sendMessage(message, stats)
+        sendMarkup('Not authorized user.', context.bot, update, None)
 
-
-async def start(client, message):
-    if len(message.command) > 1:
-        userid = message.from_user.id
-        input_token = message.command[1]
-        if userid not in user_data:
-            return await sendMessage(message, 'Who are you?')
-        data = user_data[userid]
-        if 'token' not in data or data['token'] != input_token:
-            return await sendMessage(message, 'This is a token already expired')
-        data['token'] = str(uuid4())
-        data['time'] = time()
-        user_data[userid].update(data)
-        return await sendMessage(message, 'Token refreshed successfully!')
-    elif config_dict['DM_MODE']:
-        start_string = 'Bot Started.\n' \
-            'Now I will send your files and links here.\n'
+def restart(update, context):
+    cmd = update.effective_message.text.split(' ', 1)
+    dynoRestart = False
+    dynoKill = False
+    if len(cmd) == 2:
+        dynoRestart = (cmd[1].lower()).startswith('d')
+        dynoKill = (cmd[1].lower()).startswith('k')
+    if (not HEROKU_API_KEY) or (not HEROKU_APP_NAME):
+        LOGGER.info("If you want Heroku features, fill HEROKU_APP_NAME HEROKU_API_KEY vars.")
+        dynoRestart = False
+        dynoKill = False
+    if dynoRestart:
+        LOGGER.info("Dyno Restarting.")
+        restart_message = sendMessage("Dyno Restarting.", context.bot, update)
+        with open(".restartmsg", "w") as f:
+            f.truncate(0)
+            f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
+        heroku_conn = heroku3.from_key(HEROKU_API_KEY)
+        app = heroku_conn.app(HEROKU_APP_NAME)
+        app.restart()
+    elif dynoKill:
+        LOGGER.info("Killing Dyno. MUHAHAHA")
+        sendMessage("Killed Dyno.", context.bot, update)
+        heroku_conn = heroku3.from_key(HEROKU_API_KEY)
+        app = heroku_conn.app(HEROKU_APP_NAME)
+        proclist = app.process_formation()
+        for po in proclist:
+            app.process_formation()[po.type].scale(0)
     else:
-        start_string = '🌹 Welcome To One Of A Modified Anasty Mirror Bot\n' \
-            'This bot can Mirror all your links To Google Drive!\n'
-    await sendMessage(message, start_string)
+        LOGGER.info("Normally Restarting.")
+        restart_message = sendMessage("Normally Restarting.", context.bot, update)
+        if Interval:
+            Interval[0].cancel()
+        alive.kill()
+        procs = psprocess(web.pid)
+        for proc in procs.children(recursive=True):
+            proc.kill()
+        procs.kill()
+        clean_all()
+        srun(["python3", "update.py"])
+        nox.kill()
+        a2cproc = psprocess(a2c.pid)
+        for proc in a2cproc.children(recursive=True):
+            proc.kill()
+        a2cproc.kill()
+        with open(".restartmsg", "w") as f:
+            f.truncate(0)
+            f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
+        osexecl(executable, executable, "-m", "bot")
 
 
-async def restart(client, message):
-    restart_message = await sendMessage(message, "Restarting...")
-    if scheduler.running:
-        scheduler.shutdown(wait=False)
-    for interval in [QbInterval, Interval]:
-        if interval:
-            interval[0].cancel()
-    await sync_to_async(clean_all)
-    proc1 = await create_subprocess_exec('pkill', '-9', '-f', 'gunicorn|mrbeast|pewdiepie|mutahar|rclone')
-    proc2 = await create_subprocess_exec('uname', '-a')
-    await gather(proc1.wait(), proc2.wait())
-    async with aiopen(".restartmsg", "w") as f:
-        await f.write(f"{restart_message.chat.id}\n{restart_message.id}\n")
-    osexecl(executable, executable, "-m", "bot")
-
-
-async def ping(client, message):
+def ping(update, context):
     start_time = int(round(time() * 1000))
-    reply = await sendMessage(message, "Starting Ping")
+    reply = sendMessage("Starting Ping", context.bot, update)
     end_time = int(round(time() * 1000))
-    await editMessage(reply, f'{end_time - start_time} ms')
+    editMessage(f'{end_time - start_time} ms', reply)
 
 
-async def log(client, message):
-    await sendFile(message, 'log.txt')
+def log(update, context):
+    sendLogFile(context.bot, update)
 
-help_string = f'''
-NOTE: Try each command without any argument to see more detalis.
-/{BotCommands.MirrorCommand[0]} or /{BotCommands.MirrorCommand[1]}: Start mirroring to Google Drive.
-/{BotCommands.ZipMirrorCommand[0]} or /{BotCommands.ZipMirrorCommand[1]}: Start mirroring and upload the file/folder compressed with zip extension.
-/{BotCommands.UnzipMirrorCommand[0]} or /{BotCommands.UnzipMirrorCommand[1]}: Start mirroring and upload the file/folder extracted from any archive extension.
-/{BotCommands.QbMirrorCommand[0]} or /{BotCommands.QbMirrorCommand[1]}: Start Mirroring to Google Drive using qBittorrent.
-/{BotCommands.QbZipMirrorCommand[0]} or /{BotCommands.QbZipMirrorCommand[1]}: Start mirroring using qBittorrent and upload the file/folder compressed with zip extension.
-/{BotCommands.QbUnzipMirrorCommand[0]} or /{BotCommands.QbUnzipMirrorCommand[1]}: Start mirroring using qBittorrent and upload the file/folder extracted from any archive extension.
-/{BotCommands.YtdlCommand[0]} or /{BotCommands.YtdlCommand[1]}: Mirror yt-dlp supported link.
-/{BotCommands.YtdlZipCommand[0]} or /{BotCommands.YtdlZipCommand[1]}: Mirror yt-dlp supported link as zip.
-/{BotCommands.LeechCommand[0]} or /{BotCommands.LeechCommand[1]}: Start leeching to Telegram.
-/{BotCommands.ZipLeechCommand[0]} or /{BotCommands.ZipLeechCommand[1]}: Start leeching and upload the file/folder compressed with zip extension.
-/{BotCommands.UnzipLeechCommand[0]} or /{BotCommands.UnzipLeechCommand[1]}: Start leeching and upload the file/folder extracted from any archive extension.
-/{BotCommands.QbLeechCommand[0]} or /{BotCommands.QbLeechCommand[1]}: Start leeching using qBittorrent.
-/{BotCommands.QbZipLeechCommand[0]} or /{BotCommands.QbZipLeechCommand[1]}: Start leeching using qBittorrent and upload the file/folder compressed with zip extension.
-/{BotCommands.QbUnzipLeechCommand[0]} or /{BotCommands.QbUnzipLeechCommand[1]}: Start leeching using qBittorrent and upload the file/folder extracted from any archive extension.
-/{BotCommands.YtdlLeechCommand[0]} or /{BotCommands.YtdlLeechCommand[1]}: Leech yt-dlp supported link.
-/{BotCommands.YtdlZipLeechCommand[0]} or /{BotCommands.YtdlZipLeechCommand[1]}: Leech yt-dlp supported link as zip.
-/{BotCommands.CloneCommand} [drive_url]: Copy file/folder to Google Drive.
-/{BotCommands.CountCommand} [drive_url]: Count file/folder of Google Drive.
-/{BotCommands.DeleteCommand} [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo).
-/leech{BotCommands.DeleteCommand} [telegram_link]: Delete replies from telegram (Only Owner & Sudo).
-/{BotCommands.UserSetCommand} [query]: Users settings.
-/{BotCommands.BotSetCommand} [query]: Bot settings.
-/{BotCommands.BtSelectCommand}: Select files from torrents by gid or reply.
-/{BotCommands.CategorySelect}: Change upload category for Google Drive.
-/{BotCommands.CancelMirror}: Cancel task by gid or reply.
-/{BotCommands.CancelAllCommand[0]} : Cancel all tasks which added by you {BotCommands.CancelAllCommand[1]} to in bots.
-/{BotCommands.ListCommand} [query]: Search in Google Drive(s).
-/{BotCommands.SearchCommand} [query]: Search for torrents with API.
-/{BotCommands.StatusCommand[0]} or /{BotCommands.StatusCommand[1]}: Shows a status of all the downloads.
-/{BotCommands.StatsCommand}: Show stats of the machine where the bot is hosted in.
-/{BotCommands.PingCommand[0]} or /{BotCommands.PingCommand[1]}: Check how long it takes to Ping the Bot (Only Owner & Sudo).
-/{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Only Owner & Sudo).
-/{BotCommands.UnAuthorizeCommand}: Unauthorize a chat or a user to use the bot (Only Owner & Sudo).
-/{BotCommands.UsersCommand}: show users settings (Only Owner & Sudo).
-/{BotCommands.AddSudoCommand}: Add sudo user (Only Owner).
-/{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner).
-/{BotCommands.RestartCommand[0]}: Restart and update the bot (Only Owner & Sudo).
-/{BotCommands.RestartCommand[1]}: Restart all bots and update the bot (Only Owner & Sudo)..
-/{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports (Only Owner & Sudo).
-/{BotCommands.ShellCommand}: Run shell commands (Only Owner).
-/{BotCommands.EvalCommand}: Run Python Code Line | Lines (Only Owner).
-/{BotCommands.ExecCommand}: Run Commands In Exec (Only Owner).
-/{BotCommands.ClearLocalsCommand}: Clear {BotCommands.EvalCommand} or {BotCommands.ExecCommand} locals (Only Owner).
-/{BotCommands.RssCommand}: RSS Menu.
+
+help_string_telegraph = f'''<br>
+<b>/{BotCommands.HelpCommand}</b>: To get this message
+<br><br>
+<b>/{BotCommands.MirrorCommand}</b> [download_url][magnet_link]: Start mirroring to Google Drive. Send <b>/{BotCommands.MirrorCommand}</b> for more help
+<br><br>
+<b>/{BotCommands.ZipMirrorCommand}</b> [download_url][magnet_link]: Start mirroring and upload the file/folder compressed with zip extension
+<br><br>
+<b>/{BotCommands.UnzipMirrorCommand}</b> [download_url][magnet_link]: Start mirroring and upload the file/folder extracted from any archive extension
+<br><br>
+<b>/{BotCommands.QbMirrorCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start Mirroring using qBittorrent, Use <b>/{BotCommands.QbMirrorCommand} s</b> to select files before downloading
+<br><br>
+<b>/{BotCommands.QbZipMirrorCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start mirroring using qBittorrent and upload the file/folder compressed with zip extension
+<br><br>
+<b>/{BotCommands.QbUnzipMirrorCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start mirroring using qBittorrent and upload the file/folder extracted from any archive extension
+<br><br>
+<b>/{BotCommands.LeechCommand}</b> [download_url][magnet_link]: Start leeching to Telegram, Use <b>/{BotCommands.LeechCommand} s</b> to select files before leeching
+<br><br>
+<b>/{BotCommands.ZipLeechCommand}</b> [download_url][magnet_link]: Start leeching to Telegram and upload the file/folder compressed with zip extension
+<br><br>
+<b>/{BotCommands.UnzipLeechCommand}</b> [download_url][magnet_link][torent_file]: Start leeching to Telegram and upload the file/folder extracted from any archive extension
+<br><br>
+<b>/{BotCommands.QbLeechCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start leeching to Telegram using qBittorrent, Use <b>/{BotCommands.QbLeechCommand} s</b> to select files before leeching
+<br><br>
+<b>/{BotCommands.QbZipLeechCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start leeching to Telegram using qBittorrent and upload the file/folder compressed with zip extension
+<br><br>
+<b>/{BotCommands.QbUnzipLeechCommand}</b> [magnet_link][torrent_file][torrent_file_url]: Start leeching to Telegram using qBittorrent and upload the file/folder extracted from any archive extension
+<br><br>
+<b>/{BotCommands.CloneCommand}</b> [drive_url][gdtot_url]: Copy file/folder to Google Drive
+<br><br>
+<b>/{BotCommands.CountCommand}</b> [drive_url][gdtot_url]: Count file/folder of Google Drive
+<br><br>
+<b>/{BotCommands.DeleteCommand}</b> [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo)
+<br><br>
+<b>/{BotCommands.WatchCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link. Send <b>/{BotCommands.WatchCommand}</b> for more help
+<br><br>
+<b>/{BotCommands.ZipWatchCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link as zip
+<br><br>
+<b>/{BotCommands.LeechWatchCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link
+<br><br>
+<b>/{BotCommands.LeechZipWatchCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link as zip
+<br><br>
+<b>/{BotCommands.LeechSetCommand}</b>: Leech settings
+<br><br>
+<b>/{BotCommands.SetThumbCommand}</b>: Reply photo to set it as Thumbnail
+<br><br>
+<b>/{BotCommands.RssListCommand}</b>: List all subscribed rss feed info
+<br><br>
+<b>/{BotCommands.RssGetCommand}</b>: [Title] [Number](last N links): Force fetch last N links
+<br><br>
+<b>/{BotCommands.RssSubCommand}</b>: [Title] [Rss Link] f: [filter]: Subscribe new rss feed
+<br><br>
+<b>/{BotCommands.RssUnSubCommand}</b>: [Title]: Unubscribe rss feed by title
+<br><br>
+<b>/{BotCommands.RssUnSubAllCommand}</b>: Remove all rss feed subscriptions
+<br><br>
+<b>/{BotCommands.CancelMirror}</b>: Reply to the message by which the download was initiated and that download will be cancelled
+<br><br>
+<b>/{BotCommands.CancelAllCommand}</b>: Cancel all downloading tasks
+<br><br>
+<b>/{BotCommands.ListCommand}</b> [query]: Search in Google Drive(s)
+<br><br>
+<b>/{BotCommands.SearchCommand}</b> [query]: Search for torrents with API
+<br>sites: <code>rarbg, 1337x, yts, etzv, tgx, torlock, piratebay, nyaasi, ettv</code><br><br>
+<b>/{BotCommands.StatusCommand}</b>: Shows a status of all the downloads
+<br><br>
+<b>/{BotCommands.RestartCommand}</b>: Restart bot. Use <b>/{BotCommands.RestartCommand} dyno</b> for dyno restarting. Use <b>/{BotCommands.RestartCommand} kill</b> to kill dyno.
+<br><br>
+<b>/{BotCommands.StatsCommand}</b>: Show Stats of the machine the bot is hosted on
+<br><br>
+<b>/{BotCommands.WayBackCommand}</b>: Archive a webpage with Wayback Machine
+<br><br>
+<b>/{BotCommands.VirusTotalCommand}</b>: Reply a file to scan with VirusTotal
+<br><br>
+<b>/{BotCommands.HashCommand}</b>: Reply a file to generate hash MD5, SHA1 etc.
+<br><br>
+<b>/{BotCommands.ShortenerCommand}</b>: Reply a link to short it.
+<br><br>
+<b>/{BotCommands.MediaInfoCommand}</b>: Reply a file to get mediainfo.
 '''
 
+help = telegraph.create_page(
+    title='Bot Help',
+    content=help_string_telegraph)["path"]
 
-async def bot_help(client, message):
-    await sendMessage(message, help_string)
+def bot_help(update, context):
+    button = ButtonMaker()
+    button.buildbutton("Click and Read", f"https://telegra.ph/{help}")
+    reply_markup = InlineKeyboardMarkup(button.build_menu(1))
+    sendMarkup(f'<a href="https://telegra.ph/{help}">Click and Read</a>', context.bot, update, reply_markup)
 
+botcmds = [
+        (f'{BotCommands.SpeedCommand}','Speed Of The Bot'),
+        (f'{BotCommands.UpdateCommand}','Get Updated by Repository'),
+        (f'{BotCommands.HelpCommand}','Get Detailed Help'),
+        (f'{BotCommands.SearchCommand}','Get Torrent By Searching'),
+        (f'{BotCommands.StartCommand}','Start The Bot'),
+        (f'{BotCommands.ConfigMenuCommand}','Configuration of The bot'),
+        (f'{BotCommands.MirrorCommand}','Start Mirroring'), 
+        (f'{BotCommands.ZipMirrorCommand}','Start mirroring and upload as .zip'),
+        (f'{BotCommands.UnzipMirrorCommand}','Extract files'),
+        (f'{BotCommands.QbMirrorCommand}','Start Mirroring using qBittorrent'),
+        (f'{BotCommands.QbZipMirrorCommand}','Start mirroring and upload as .zip using qb'),
+        (f'{BotCommands.QbUnzipMirrorCommand}','Extract files using qBitorrent'),
+        (f'{BotCommands.CloneCommand}','Copy file/folder to Drive'),
+        (f'{BotCommands.LeechCommand}','Leech'),
+        (f'{BotCommands.ZipLeechCommand}','Leech and upload as zip'),
+        (f'{BotCommands.UnzipLeechCommand}','Leech and extract files'),
+        (f'{BotCommands.QbLeechCommand}','Leech torrent using qBittorrent'),
+        (f'{BotCommands.QbZipLeechCommand}','Leech torrent and upload as zip using qb'),
+        (f'{BotCommands.QbUnzipLeechCommand}','Leech torrent and extract using qb'),
+        (f'{BotCommands.LeechWatchCommand}','Leech yt-dlp supported link'),
+        (f'{BotCommands.LeechZipWatchCommand}','Leech yt-dlp supported link as zip'),
+        (f'{BotCommands.CountCommand}','Count file/folder of Drive link'),
+        (f'{BotCommands.DeleteCommand}','Delete file from Drive'),
+        (f'{BotCommands.WatchCommand}','Mirror Youtube-dl support link'),
+        (f'{BotCommands.ZipWatchCommand}','Mirror Youtube playlist link as .zip'),
+        (f'{BotCommands.CancelMirror}','Cancel a task'),
+        (f'{BotCommands.CancelAllCommand}','Cancel all tasks'),
+        (f'{BotCommands.ListCommand}','Searches files in Drive'),
+        (f'{BotCommands.StatusCommand}','Get Mirror Status message'),
+        (f'{BotCommands.StatsCommand}','Bot Usage Stats'),
+        (f'{BotCommands.PingCommand}','Ping the Bot'),
+        (f'{BotCommands.RestartCommand}','Restart the bot [owner/sudo only]'),
+        (f'{BotCommands.LogCommand}','Get the Bot Log [owner/sudo only]'),
+        (f'{BotCommands.RssHelpCommand}','Get help for RSS feeds module'),
+        (f'{BotCommands.TsHelpCommand}','Get help for Torrent search module'),
+        (f'{BotCommands.MediaInfoCommand}','Get media info for files'),
+        (f'{BotCommands.LookCommand}','Get Looking for Files')
+]
 
-async def restart_notification():
-    if await aiopath.isfile(".restartmsg"):
-        with open(".restartmsg") as f:
-            chat_id, msg_id = map(int, f)
-    else:
-        chat_id, msg_id = 0, 0
-
-    async def send_incompelete_task_message(cid, msg):
+def main():
+    bot.set_my_commands(botcmds)
+    start_cleanup()
+    if IS_VPS:
+        asyrun(start_server_async(PORT))
+    # Check if the bot is restarting
+    if ospath.isfile(".restartmsg"):
+        with open(".restartmsg") as f: chat_id, msg_id = map(int, f)
+        try: bot.edit_message_text("Restarted successfully.", chat_id, msg_id)
+        except Exception as e: LOGGER.error(e)
+        osremove(".restartmsg")
+    elif OWNER_ID:
         try:
-            if msg.startswith('Restarted Successfully!'):
-                await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
-                await bot.send_message(chat_id, msg, disable_web_page_preview=True, reply_to_message_id=msg_id)
-                await aioremove(".restartmsg")
-            else:
-                await bot.send_message(chat_id=cid, text=msg, disable_web_page_preview=True,
-                                       disable_notification=True)
+            text = "<b>Bot Restarted.</b>"
+            todel = bot.sendMessage(chat_id=OWNER_ID, text=text, parse_mode=ParseMode.HTML)
+            Thread(target=auto_delete_message, args=(bot, todel)).start()
+            if AUTHORIZED_CHATS:
+                for i in AUTHORIZED_CHATS:
+                    todel = bot.sendMessage(chat_id=i, text=text, parse_mode=ParseMode.HTML)
+                    Thread(target=auto_delete_message, args=(bot, todel)).start()
         except Exception as e:
-            LOGGER.error(e)
+            LOGGER.warning(e)
 
-    if DATABASE_URL:
-        if INCOMPLETE_TASK_NOTIFIER and (notifier_dict := await DbManger().get_incomplete_tasks()):
-            for cid, data in notifier_dict.items():
-                msg = 'Restarted Successfully!' if cid == chat_id else 'Bot Restarted!'
-                for tag, links in data.items():
-                    msg += f"\n\n{tag}: "
-                    for index, link in enumerate(links, start=1):
-                        msg += f" <a href='{link}'>{index}</a> |"
-                        if len(msg.encode()) > 4000:
-                            await send_incompelete_task_message(cid, msg)
-                            msg = ''
-                if msg:
-                    await send_incompelete_task_message(cid, msg)
+    start_handler = CommandHandler(BotCommands.StartCommand, start, run_async=True)
+    ping_handler = CommandHandler(BotCommands.PingCommand, ping,
+                                  filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
+    restart_handler = CommandHandler(BotCommands.RestartCommand, restart,
+                                     filters=CustomFilters.owner_filter | CustomFilters.sudo_user, run_async=True)
+    help_handler = CommandHandler(BotCommands.HelpCommand,
+                                  bot_help, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
+    log_handler = CommandHandler(BotCommands.LogCommand, log, filters=CustomFilters.owner_filter | CustomFilters.sudo_user, run_async=True)
+    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(ping_handler)
+    dispatcher.add_handler(restart_handler)
+    dispatcher.add_handler(help_handler)
+    dispatcher.add_handler(log_handler)
+    updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS, allowed_updates=Update.ALL_TYPES)
+    LOGGER.info("Bot Started.")
+    signal.signal(signal.SIGINT, exit_clean_up)
+    if rss_session is not None:
+        rss_session.start()
 
-        if STOP_DUPLICATE_TASKS:
-            await DbManger().clear_download_links()
-
-    if await aiopath.isfile(".restartmsg"):
-        try:
-            await bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
-        except:
-            pass
-        await aioremove(".restartmsg")
-
-
-async def main():
-    await gather(start_cleanup(), torrent_search.initiate_search_tools(), restart_notification(), set_commands(bot))
-
-    bot.add_handler(MessageHandler(
-        start, filters=command(BotCommands.StartCommand)))
-    bot.add_handler(MessageHandler(log, filters=command(
-        BotCommands.LogCommand) & CustomFilters.sudo))
-    bot.add_handler(MessageHandler(restart, filters=command(
-        BotCommands.RestartCommand) & CustomFilters.sudo))
-    bot.add_handler(MessageHandler(ping, filters=command(
-        BotCommands.PingCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(bot_help, filters=command(
-        BotCommands.HelpCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(stats, filters=command(
-        BotCommands.StatsCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(versionInfo, filters=command(
-        BotCommands.VerCommand) & CustomFilters.authorized))
-    bot.add_handler(MessageHandler(restartdyno, filters=command(
-        BotCommands.DynoCommand) & CustomFilters.authorized))
-    LOGGER.info("Bot Started!")
-    signal(SIGINT, exit_clean_up)
-
-bot.loop.run_until_complete(main())
-bot.loop.run_forever()
+app.start()
+main()
+idle()
