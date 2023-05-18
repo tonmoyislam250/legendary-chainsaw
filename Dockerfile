@@ -132,7 +132,11 @@ RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
     --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static \
     --with-python3 enable-python --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-    make install 
+    make install && \
+    cd bindings/python/ && \
+    python3 setup.py bdist_wheel && \
+    cd dist && ls && \
+    pip3 install *.whl
 
 
 RUN mkdir -p /usr/local/go/src/ && cd /usr/local/go/src/ && \
