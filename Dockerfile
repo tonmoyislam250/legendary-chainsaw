@@ -1,6 +1,4 @@
 FROM alpine:3.17
-WORKDIR /usr/src/app
-RUN chmod 777 /usr/src/app
 ENV TZ Asia/Dhaka
 ENV PATH /usr/local/go/bin:$PATH
 
@@ -163,6 +161,9 @@ RUN echo -e "\e[32m[INFO]: Installing Cloudflared Tunnel.\e[0m" && \
     wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}.deb -O cloudflared-linux-${ARCH}.deb && \
     dpkg -i --force-architecture cloudflared-linux-${ARCH}.deb
 
+
+WORKDIR /usr/src/app
+RUN chmod 777 /usr/src/app
 
 RUN type ffmpeg && type aria2c && type qbittorrent-nox
 RUN cp /usr/bin/aria2c /usr/bin/mrbeast && mkdir -pv /usr/src/test && mkdir -pv /usr/src/binary && \
