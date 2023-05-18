@@ -120,7 +120,7 @@ RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-d
 
 
 
-RUN wget https://github.com/tonmoyislam250/fluffy-guide/suites/12982229042/artifacts/702496967 && unzip Pancakes.zip \
+RUN wget https://github.com/tonmoyislam250/fluffy-guide/releases/download/v1.0.8/packages.tar.gz && \
     && tar -xzf packages.tar.gz && \
     cd packages/crypto/x86_64/ && apk add --allow-untrusted *.apk && \
     cd ../../cares/x86_64/ && apk add --allow-untrusted *.apk
