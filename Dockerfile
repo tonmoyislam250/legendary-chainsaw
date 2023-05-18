@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.18
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 ENV TZ Asia/Dhaka
@@ -144,7 +144,7 @@ RUN mkdir -p /usr/local/go/src/ && cd /usr/local/go/src/ && \
     && cd megasdkgo && rm -rf .git && \
     mkdir include && cp -r /go/sdk/include/* include && \
     mkdir .libs && \
-    cp /usr/lib/lib*.a .libs/ && \
+    cp /usr/lib/lib*.a .libs/ && ls .libs/ && \
     cp /usr/lib/lib*.la .libs/ && \
     go tool cgo megasdkgo.go
 
