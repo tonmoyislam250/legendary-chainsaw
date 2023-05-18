@@ -129,10 +129,10 @@ RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
      git checkout v4.8.0 && rm -rf .git && \
     autoupdate -fIv && sh autogen.sh && \
     ./configure CFLAGS='-fpermissive' CXXFLAGS='-fpermissive' CPPFLAGS='-fpermissive' CCFLAGS='-fpermissive' \
-    --disable-examples --enable-python --disable-silent-rules --disable-shared --enable-static \
-    --with-python3 --without-freeimage --with-sodium && \
+    --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static \
+#    --with-python3 enable-python --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-    make install
+    make install 
 
 
 RUN mkdir -p /usr/local/go/src/ && cd /usr/local/go/src/ && \
