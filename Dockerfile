@@ -106,7 +106,7 @@ RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-d
     build-base perl python3 python3-dev py3-pip py3-wheel aria2 qbittorrent-nox p7zip \
     brotli-dev brotli-static readline-dev readline-static unzip tar xz wget \
     sqlite-dev sqlite-static libsodium-dev libsodium-static  nghttp2-dev nghttp2-static \
-    tzdata xz curl pv jq unzip tar wget ffmpeg libpq-dev libffi-dev \
+    tzdata xz pv jq unzip tar wget ffmpeg libpq-dev libffi-dev \
     zlib-dev zlib-static curl-dev curl-static openssl-dev openssl-libs-static \
     freeimage freeimage-dev unzip tar xz wget swig boost-dev \
     clang clang-dev ccache gettext gettext-dev \
@@ -129,8 +129,8 @@ RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
      git checkout v4.8.0 && rm -rf .git && \
     autoupdate -fIv && sh autogen.sh && \
     ./configure CFLAGS='-fpermissive' CXXFLAGS='-fpermissive' CPPFLAGS='-fpermissive' CCFLAGS='-fpermissive' \
-    --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static && \
-#    --with-python3 enable-python --with-sodium && \
+    --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static \
+    --with-python3 enable-python --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install 
 
