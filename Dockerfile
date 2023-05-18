@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.17
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 ENV TZ Asia/Dhaka
