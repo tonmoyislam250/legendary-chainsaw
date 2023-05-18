@@ -119,16 +119,6 @@ RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-d
     && npm install -g localtunnel kill-port 
 
 
-RUN apk add unzip tar xz wget alpine-sdk git libtool autoconf automake linux-headers musl-dev m4 \
-    build-base perl ca-certificates
-RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing --update \
-     zlib-dev zlib-static curl-dev curl-static openssl-dev openssl-libs-static \
-     alpine-sdk git libtool autoconf automake linux-headers musl-dev m4 build-base perl ca-certificates \
-     brotli-dev brotli-static readline-dev readline-static unzip tar xz wget \
-     sqlite-dev sqlite-static libsodium-dev libsodium-static  nghttp2-dev nghttp2-static
-
-
-
 
 RUN wget https://github.com/tonmoyislam250/fluffy-guide/releases/download/v1.0.7/packages.tar.gz \
     && tar -xzf packages.tar.gz && \
@@ -142,11 +132,8 @@ RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
     --disable-examples --enable-python --disable-silent-rules --disable-shared --enable-static \
     --with-python3 --without-freeimage --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-    make install && \
-    cd bindings/python/ && \
-    python3 setup.py bdist_wheel && \
-    cd dist && ls && \
-    pip3 install *.whl
+    make install
+
 
 RUN mkdir -p /usr/local/go/src/ && cd /usr/local/go/src/ && \
     git clone https://github.com/tonmoyislam250/megasdkgo \
