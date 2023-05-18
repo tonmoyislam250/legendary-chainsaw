@@ -129,7 +129,7 @@ RUN git clone https://github.com/meganz/sdk.git /go/sdk && cd /go/sdk && \
     --disable-examples --enable-python --disable-silent-rules --disable-shared --enable-static \
     --with-python3 --without-freeimage --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-    make install && \
+#    make install && \
     cd bindings/python/ && \
     python3 setup.py bdist_wheel && \
     cd dist && ls && \
