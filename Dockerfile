@@ -122,7 +122,7 @@ RUN wget https://github.com/tonmoyislam250/fluffy-guide/releases/download/v1.0.7
     cd packages/crypto/x86_64/ && apk add --allow-untrusted *.apk && \
     cd ../../cares/x86_64/ && apk add --allow-untrusted *.apk
 
-RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
+RUN git clone https://github.com/meganz/sdk.git /go/sdk && cd /go/sdk && \
      git checkout v4.8.0 && rm -rf .git && \
     autoupdate -fIv && sh autogen.sh && \
     ./configure CFLAGS='-fpermissive' CXXFLAGS='-fpermissive' CPPFLAGS='-fpermissive' CCFLAGS='-fpermissive' \
