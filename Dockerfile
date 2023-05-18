@@ -10,7 +10,7 @@ ENV HOST_CPU_ARCH=$CPU_ARCH
 ARG TARGETPLATFORM BUILDPLATFORM
 
 ENV GOLANG_VERSION 1.20.4
-
+RUN apk add --no-cache ca-certificates
 RUN set -eux; \
 	apk add --no-cache --virtual .fetch-deps gnupg; \
 	arch="$(apk --print-arch)"; \
@@ -51,7 +51,7 @@ RUN set -eux; \
 	echo "$sha256 *go.tgz" | sha256sum -c -; \
 	\
 	GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
-	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys 'EB4C 1BFD 4F04 2F6D DDCC  EC91 7721 F63B D38B 4796';
+	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys 'EB4C 1BFD 4F04 2F6D DDCC  EC91 7721 F63B D38B 4796'; \
 	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys '2F52 8D36 D67B 69ED F998  D857 78BD 6547 3CB3 BD13'; \
 	gpg --batch --verify go.tgz.asc go.tgz; \
 	gpgconf --kill all; \
@@ -99,7 +99,7 @@ RUN set -eux; \
 RUN apk update
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing --update
 RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-dev m4 \
-    build-base perl ca-certificates python3 python3-dev py3-pip py3-wheel aria2 qbittorrent-nox p7zip \
+    build-base perl python3 python3-dev py3-pip py3-wheel aria2 qbittorrent-nox p7zip \
     brotli-dev brotli-static readline-dev readline-static unzip tar xz wget \
     sqlite-dev sqlite-static libsodium-dev libsodium-static  nghttp2-dev nghttp2-static \
     tzdata xz curl pv jq unzip tar wget ffmpeg libpq-dev libffi-dev \
