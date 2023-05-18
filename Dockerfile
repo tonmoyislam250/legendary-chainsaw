@@ -7,6 +7,7 @@ ENV PATH /usr/local/go/bin:$PATH
 
 ARG CPU_ARCH=amd64
 ENV HOST_CPU_ARCH=$CPU_ARCH
+ENV VERSION 4.8.0
 ARG TARGETPLATFORM BUILDPLATFORM
 
 ENV GOLANG_VERSION 1.20.4
@@ -129,7 +130,7 @@ RUN git clone https://github.com/meganz/sdk.git /go/sdk && cd /go/sdk && \
     --disable-examples --enable-python --disable-silent-rules --disable-shared --enable-static \
     --with-python3 --without-freeimage --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-#    make install && \
+    make install && \
     cd bindings/python/ && \
     python3 setup.py bdist_wheel && \
     cd dist && ls && \
