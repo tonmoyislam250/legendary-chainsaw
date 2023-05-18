@@ -164,7 +164,7 @@ RUN type ffmpeg && type aria2c && type qbittorrent-nox
 RUN cp /usr/bin/aria2c /usr/bin/mrbeast && mkdir -pv /usr/src/test && mkdir -pv /usr/src/binary && \
     cp /usr/bin/qbittorrent-nox /usr/bin/pewdiepie && \
     cp /usr/bin/ffmpeg /usr/bin/mutahar
-COPY requirements3.txt .
+COPY updatedreq.txt .
 RUN pip3 install --no-cache-dir -r requirements3.txt
 COPY pewdiepie.pyx setup.py /usr/src/test/
 RUN cd /usr/src/test/ && python3 setup.py build_ext --inplace && cp pewdiepie.cpython-311-x86_64-linux-musl.so /usr/src/binary/pewdiepie.so
