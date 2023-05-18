@@ -129,7 +129,7 @@ RUN git clone https://github.com/meganz/sdk.git sdk && cd sdk && \
      git checkout v4.8.0 && rm -rf .git && \
     autoupdate -fIv && sh autogen.sh && \
     ./configure CFLAGS='-fpermissive' CXXFLAGS='-fpermissive' CPPFLAGS='-fpermissive' CCFLAGS='-fpermissive' \
-    --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static \
+    --disable-examples --without-freeimage --disable-silent-rules --disable-shared --enable-static && \
 #    --with-python3 enable-python --with-sodium && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install 
