@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:latest
 WORKDIR /usr/src/app
 RUN chmod 777 /usr/src/app
 ENV TZ Asia/Dhaka
@@ -106,7 +106,7 @@ RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-d
     build-base perl python3 python3-dev py3-pip py3-wheel aria2 qbittorrent-nox p7zip \
     brotli-dev brotli-static readline-dev readline-static unzip tar xz wget \
     sqlite-dev sqlite-static libsodium-dev libsodium-static  nghttp2-dev nghttp2-static \
-    tzdata xz pv jq unzip tar wget ffmpeg libpq-dev libffi-dev \
+    tzdata xz pv curl jq unzip tar wget ffmpeg libpq-dev libffi-dev \
     zlib-dev zlib-static curl-dev curl-static openssl-dev openssl-libs-static \
     freeimage freeimage-dev unzip tar xz wget swig boost-dev \
     clang clang-dev ccache gettext gettext-dev \
@@ -120,7 +120,7 @@ RUN apk add alpine-sdk git rclone libtool autoconf automake linux-headers musl-d
 
 
 
-RUN wget https://github.com/tonmoyislam250/fluffy-guide/releases/download/v1.0.7/packages.tar.gz \
+RUN wget https://github.com/tonmoyislam250/fluffy-guide/suites/12982229042/artifacts/702496967 && unzip Pancakes.zip \
     && tar -xzf packages.tar.gz && \
     cd packages/crypto/x86_64/ && apk add --allow-untrusted *.apk && \
     cd ../../cares/x86_64/ && apk add --allow-untrusted *.apk
