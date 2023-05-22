@@ -115,13 +115,20 @@ async def get_telegraph_list(telegraph_content):
     return buttons.build_menu(1)
 
 
-def get_progress_bar_string(pct):
-    pct = float(pct.strip('%'))
-    p = min(max(pct, 0), 100)
-    cFull = int(p // 8)
-    p_str = '■' * cFull
-    p_str += '□' * (12 - cFull)
-    return f"[{p_str}]"
+def get_progress_bar_string(status):
+    completed = status.processed_bytes() / 8
+    total = status.size_raw() / 8
+    p = 0 if total == 0 else round(completed * 100 / total)
+    p = min(max(p, 0), 100)
+    cFull = p // 8
+    cPart = p % 8 - 1
+    p_str = '█' * cFull
+    if cPart >= 0:
+        p_str += PROGRESS_INCOMPLETE[cPart]
+    p_str += '░' * (PROGRESS_MAX_SIZE - cFull)
+    p_str = f"[{p_str}]"
+    return p_str
+
 
 
 def get_readable_message():
@@ -136,7 +143,7 @@ def get_readable_message():
     for download in list(download_dict.values())[STATUS_START:STATUS_LIMIT+STATUS_START]:
         msg += f"<b>{download.status()}</b>: <code>{escape(f'{download.name()}')}</code>"
         if download.status() not in [MirrorStatus.STATUS_SPLITTING, MirrorStatus.STATUS_SEEDING]:
-            msg += f"\n{get_progress_bar_string(download.progress())} {download.progress()}"
+            msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
             msg += f"\n<b>Processed</b>: {download.processed_bytes()} of {download.size()}"
             msg += f"\n<b>Speed</b>: {download.speed()} | <b>ETA</b>: {download.eta()}"
             if hasattr(download, 'seeders_num'):
