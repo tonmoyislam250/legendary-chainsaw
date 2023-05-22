@@ -22,6 +22,7 @@ from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.button_build import ButtonMaker
 
 MAGNET_REGEX = r'magnet:\?xt=urn:(btih|btmh):[a-zA-Z0-9]*\s*'
+PROGRESS_INCOMPLETE = ['▂','▃','▄','▅','▆','▇','█']
 
 URL_REGEX = r'^(?!\/)(rtmps?:\/\/|mms:\/\/|rtsp:\/\/|https?:\/\/|ftp:\/\/)?([^\/:]+:[^\/@]+@)?(www\.)?(?=[^\/:\s]+\.[^\/:\s]+)([^\/:\s]+\.[^\/:\s]+)(:\d+)?(\/[^#\s]*[\s\S]*)?(\?[^#\s]*)?(#.*)?$'
 
@@ -143,7 +144,7 @@ def get_readable_message():
     for download in list(download_dict.values())[STATUS_START:STATUS_LIMIT+STATUS_START]:
         msg += f"<b>{download.status()}</b>: <code>{escape(f'{download.name()}')}</code>"
         if download.status() not in [MirrorStatus.STATUS_SPLITTING, MirrorStatus.STATUS_SEEDING]:
-            msg += f"\n{get_progress_bar_string(download.progress())} {download.progress()}"
+            msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
             msg += f"\n<b>Processed</b>: {download.processed_bytes()} of {download.size()}"
             msg += f"\n<b>Speed</b>: {download.speed()} | <b>ETA</b>: {download.eta()}"
             if hasattr(download, 'seeders_num'):
