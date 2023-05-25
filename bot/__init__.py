@@ -76,6 +76,7 @@ except:
     TORRENT_TIMEOUT = None
 
 PORT = environ.get('PORT')
+DUMP_CHAT = environ.get('DUMP_CHAT')
 Popen([f"gunicorn web.wserver:app --bind 0.0.0.0:{PORT}"], shell=True)
 srun(["pewdiepie", "-d", "--profile=."])
 if not ospath.exists('.netrc'):
