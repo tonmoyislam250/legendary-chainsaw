@@ -108,7 +108,7 @@ async def take_ss(video_file, duration):
     return des_dir
 
 
-async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False, multi_streams=True):
+async def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i=1, inLoop=False):
     if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
         return False
     if listener.seed and not listener.newDir:
@@ -120,24 +120,18 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
     leech_split_size = user_dict.get(
         'split_size') or config_dict['LEECH_SPLIT_SIZE']
     leech_split_size = min(leech_split_size, MAX_SPLIT_SIZE)
-    parts = -(-size // leech_split_size)
+    parts = ceil(size /leech_split_size)
     if (user_dict.get('equal_splits') or config_dict['EQUAL_SPLITS']) and not inLoop:
         split_size = ((size + parts - 1) // parts) + 1000
     if (await get_document_type(path))[0]:
-        if multi_streams:
-            multi_streams = await is_multi_streams(path)
         duration = (await get_media_info(path))[0]
         base_name, extension = ospath.splitext(file_)
-        split_size -= 5000000
+        split_size -= 3000000
         while i <= parts or start_time < duration - 4:
             parted_name = f"{base_name}.part{i:03}{extension}"
             out_path = ospath.join(dirpath, parted_name)
-            cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
-                   "-fs", str(split_size), "-map", "0", "-map_chapters", "-1", "-async", "1", "-strict",
-                   "-2", "-c", "copy", out_path]
-            if not multi_streams:
-                del cmd[10]
-                del cmd[10]
+            cmd = ["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time), "-i", path,
+                   "-fs", str(split_size), "-map", "0", "-async", "1", "-c", "copy", out_path]
             if listener.suproc == 'cancelled' or listener.suproc is not None and listener.suproc.returncode == -9:
                 return False
             listener.suproc = await create_subprocess_exec(*cmd, stderr=PIPE)
@@ -146,24 +140,12 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
                 return False
             elif code != 0:
                 err = (await listener.suproc.stderr.read()).decode().strip()
-                try:
-                    await aioremove(out_path)
-                except:
-                    pass
-                if multi_streams:
-                    LOGGER.warning(
-                        f"{err}. Retrying without map, -map 0 not working in all situations. Path: {path}")
-                    return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, False)
-                else:
-                    LOGGER.warning(
-                        f"{err}. Unable to split this video, if it's size less than {MAX_SPLIT_SIZE} will be uploaded as it is. Path: {path}")
-                return "errored"
             out_size = await aiopath.getsize(out_path)
             if out_size > MAX_SPLIT_SIZE:
                 dif = out_size - MAX_SPLIT_SIZE
-                split_size -= dif + 5000000
+                split_size -= dif + 3000000
                 await aioremove(out_path)
-                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, )
+                return await split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True)
             lpd = (await get_media_info(out_path))[0]
             if lpd == 0:
                 LOGGER.error(
@@ -189,3 +171,4 @@ async def split_file(path, size, file_, dirpath, split_size, listener, start_tim
             err = (await listener.suproc.stderr.read()).decode().strip()
             LOGGER.error(err)
     return True
+
