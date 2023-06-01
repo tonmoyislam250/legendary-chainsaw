@@ -82,7 +82,7 @@ async def __onDownloadComplete(tor):
     if not listener.seed:
         await sync_to_async(client.torrents_pause, torrent_hashes=ext_hash)
     if listener.select:
-        await clean_unwanted(listener.dir)
+        print("hello world")
     await listener.onDownloadComplete()
     client = await sync_to_async(get_client)
     if listener.seed:
