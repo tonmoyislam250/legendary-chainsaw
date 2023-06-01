@@ -2,6 +2,7 @@
 from asyncio import Event, create_subprocess_exec, sleep
 from html import escape
 from os import path as ospath
+from pathlib import Path
 from os import walk
 from time import time
 from urllib.parse import quote as url_quote
@@ -154,6 +155,7 @@ class MirrorLeechListener:
         if multi_links:
             await self.onUploadError('Downloaded! Waiting for other tasks...')
             return
+        Path("/my/directory").mkdir(parents=True, exist_ok=True)
         if name == "None" or self.isQbit or not await aiopath.exists(f"{self.dir}/{name}"):
             name = (await listdir(self.dir))[-1]
         m_path = f"{self.dir}/{name}"
