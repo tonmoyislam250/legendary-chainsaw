@@ -155,7 +155,7 @@ class MirrorLeechListener:
         if multi_links:
             await self.onUploadError('Downloaded! Waiting for other tasks...')
             return
-        Path("/my/directory").mkdir(parents=True, exist_ok=True)
+        Path(self.dir).mkdir(parents=True, exist_ok=True)
         if name == "None" or self.isQbit or not await aiopath.exists(f"{self.dir}/{name}"):
             name = (await listdir(self.dir))[-1]
         m_path = f"{self.dir}/{name}"
