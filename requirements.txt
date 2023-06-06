@@ -13,7 +13,7 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 gunicorn
-lk21
+git+https://github.com/tonmoyislam250/lk21.git
 lxml>=4.9.1
 markdown
 mediainfo
