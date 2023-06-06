@@ -163,23 +163,6 @@ def split_file(path, size, file_, dirpath, split_size, listener, start_time=0, i
                 listener.suproc = Popen(["mutahar", "-hide_banner", "-loglevel", "error", "-ss", str(start_time),
                                           "-i", path, "-fs", str(split_size), "-map_chapters", "-1", "-c", "copy",
                                           out_path])
-            listener.suproc.wait()
-            if listener.suproc.returncode == -9:
-                return False
-            elif listener.suproc.returncode != 0 and not noMap:
-                LOGGER.warning(f"Retrying without map, -map 0 not working in all situations. Path: {path}")
-                try:
-                    osremove(out_path)
-                except:
-                    pass
-                return split_file(path, size, file_, dirpath, split_size, listener, start_time, i, True, True)
-            elif listener.suproc.returncode != 0:
-                LOGGER.warning(f"Unable to split this video, if it's size less than {config_dict['TG_SPLIT_SIZE']} will be uploaded as it is. Path: {path}")
-                try:
-                    osremove(out_path)
-                except:
-                    pass
-                return "errored"
             out_size = get_path_size(out_path)
             if out_size > (config_dict['TG_SPLIT_SIZE'] + 1000):
                 dif = out_size - (config_dict['TG_SPLIT_SIZE'] + 1000)
