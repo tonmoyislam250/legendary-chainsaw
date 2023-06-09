@@ -554,7 +554,7 @@ def get_client():
 def aria2c_init():
     try:
         log_info("Initializing Aria2c")
-        link = "https://nyaa.si/download/1670263.torrent"
+        link = "http://ipv4.download.thinkbroadband.com/5MB.zip"
         dl = aria2.add_uris([link], {'dir': DOWNLOAD_DIR.rstrip("/")})
         for _ in range(4):
             dl = dl.live
