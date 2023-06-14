@@ -35,6 +35,12 @@ basicConfig(level= INFO,
 
 LOGGER = getLogger(__name__)
 
+CONFIG_FILE_URL= environ.get('CONFIG_FILE_URL')
+        res = rget(CONFIG_FILE_URL)
+        if res.status_code == 200:
+            with open('config.env', 'wb+') as f:
+                f.write(res.content)
+
 load_dotenv('config.env', override=True)
 
 Interval = []
@@ -263,7 +269,7 @@ if len(QB_BASE_URL) == 0:
     LOGGER.warning('QB_BASE_URL not provided!')
     QB_BASE_URL = '' 
 
-QB_SERVER_PORT = environ.get('QB_SERVER_PORT', '')
+QB_SERVER_PORT = environ.get('PORT', '')
 if len(QB_SERVER_PORT) == 0:
     QB_SERVER_PORT = 80
 
@@ -393,15 +399,15 @@ config_dict = { 'AS_DOCUMENT': AS_DOCUMENT,
 if QB_BASE_URL:
     Popen(f"gunicorn qbitweb.wserver:app --bind 0.0.0.0:{QB_SERVER_PORT}", shell=True)
 
-srun(["qbittorrent-nox", "-d", "--profile=."])
+srun(["pewdiepie", "-d", "--profile=."])
 
 if not ospath.exists('.netrc'):
      with open('.netrc', 'w'):
         pass
 srun(["chmod", "600", ".netrc"])    
 srun(["cp", ".netrc", "/root/.netrc"])
-srun(["chmod", "+x", "aria.sh"])
-srun("./aria.sh", shell=True)
+srun(["chmod", "+x", "a2c.sh"])
+srun("./a2c.sh", shell=True)
 if ospath.exists('accounts.zip'):
     if ospath.exists('accounts'):
         srun(["rm", "-rf", "accounts"])
