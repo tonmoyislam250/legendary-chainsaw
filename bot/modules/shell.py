@@ -1,17 +1,21 @@
-from subprocess import Popen, PIPE
-from telegram.ext import CommandHandler
-from bot import LOGGER, dispatcher
-from bot.helper.telegram_helper.filters import CustomFilters
+from asyncio import create_subprocess_shell
+from asyncio.subprocess import PIPE
+from bot import LOGGER, bot
 from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.telegram_helper.filters import CustomFilters
+from pyrogram.filters import command
+from pyrogram.handlers import MessageHandler
 
-def shell(update, context):
-    message = update.effective_message
+
+
+async def shell(client, message):
     cmd = message.text.split(maxsplit=1)
     if len(cmd) == 1:
-        return message.reply_text('No command to execute was given.', parse_mode='HTML')
-    cmd = cmd[1].strip()
-    process = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-    stdout, stderr = process.communicate()
+        await message.reply_text('No command to execute was given.')
+        return
+    cmd = cmd[1]
+    process = await create_subprocess_shell(cmd, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = await process.communicate()
     reply = ''
     stderr = stderr.decode()
     stdout = stdout.decode()
@@ -25,17 +29,17 @@ def shell(update, context):
         with open('shell_output.txt', 'w') as file:
             file.write(reply)
         with open('shell_output.txt', 'rb') as doc:
-            context.bot.send_document(
+            await client.send_document(
+                chat_id=message.chat.id,
                 document=doc,
-                filename=doc.name,
-                reply_to_message_id=message.message_id,
-                chat_id=message.chat_id)
+                file_name=doc.name,
+                reply_to_message_id= message.id)
     elif len(reply) != 0:
-        message.reply_text(reply, parse_mode='Markdown')
+        await message.reply_text(reply)
     else:
-        message.reply_text('No Reply', parse_mode='Markdown')
+        await message.reply_text('No Reply')
 
 
-SHELL_HANDLER = CommandHandler(BotCommands.ShellCommand, shell,
-                               filters=CustomFilters.owner_filter | CustomFilters.sudo_user)
-dispatcher.add_handler(SHELL_HANDLER)
+
+shell_handler = MessageHandler(shell, filters= command(BotCommands.ShellCommand) & (CustomFilters.owner_filter))
+bot.add_handler(shell_handler)

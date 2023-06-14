@@ -1,45 +1,30 @@
-from telegram.ext import MessageFilter
-from telegram import Message
-from bot import user_data, OWNER_ID
+from pyrogram import filters
+from bot import OWNER_ID, user_data
 
+class CustomFilters():
+     async def custom_owner_filter(self, client, update):
+          return update.from_user.id == OWNER_ID
 
-class CustomFilters:
-    class __OwnerFilter(MessageFilter):
-        def filter(self, message: Message):
-            return message.from_user.id == OWNER_ID
+     owner_filter = filters.create(custom_owner_filter)
 
-    owner_filter = __OwnerFilter()
+     async def custom_chat_filter(self, client, update):
+          uid= update.chat.id
+          return uid in user_data and user_data[uid].get('is_auth')
 
-    class __AuthorizedUserFilter(MessageFilter):
-        def filter(self, message: Message):
-            uid = message.from_user.id
-            return uid == OWNER_ID or uid in user_data and (user_data[uid].get('is_auth') or user_data[uid].get('is_sudo'))
+     chat_filter = filters.create(custom_chat_filter)
 
-    authorized_user = __AuthorizedUserFilter()
+     async def custom_user_filter(self, client, update):
+          uid= update.from_user.id
+          return uid == OWNER_ID or uid in user_data and (user_data[uid].get('is_auth') or user_data[uid].get('is_sudo'))
 
-    class __AuthorizedChat(MessageFilter):
-        def filter(self, message: Message):
-            uid = message.chat.id
-            return uid in user_data and user_data[uid].get('is_auth')
+     user_filter = filters.create(custom_user_filter)
 
-    authorized_chat = __AuthorizedChat()
+     async def custom_sudo_filter(self, client, update):
+          uid= update.from_user.id
+          return uid in user_data and user_data[uid].get('is_sudo')
 
-    class __SudoUser(MessageFilter):
-        def filter(self, message: Message):
-            uid = message.from_user.id
-            return uid in user_data and user_data[uid].get('is_sudo')
+     sudo_filter = filters.create(custom_sudo_filter)
 
-    sudo_user = __SudoUser()
-
-    class __PaidUser(MessageFilter):
-        def filter(self, message: Message):
-            uid = message.from_user.id
-           
-            return uid in user_data and user_data[uid].get('is_paid')
-
-    paid_user = __PaidUser()
-
-    @staticmethod
-    def owner_query(uid):
-        return (uid == OWNER_ID) or (uid in user_data and user_data[uid].get('is_sudo'))
-
+     @staticmethod
+     def _owner_query(uid):
+        return uid == OWNER_ID or uid in user_data and user_data[uid].get('is_sudo')
