@@ -30,7 +30,7 @@ basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 LOGGER = getLogger(__name__)
 
 
-CONFIG_FILE_URL= environ.get('CONFIG')
+CONFIG_FILE_URL= environ.get('CONFIG_FILE_URL')
 try:
     if len(CONFIG_FILE_URL) == 0:
         raise TypeError
@@ -42,7 +42,7 @@ try:
         else:
             log_error(f"Failed to download config.env {res.status_code}")
     except Exception as e:
-        log_error(f"CONFIG: {e}")
+        log_error(f"CONFIG_FILE_URL: {e}")
 except:
     pass
 
@@ -164,7 +164,7 @@ try:
     DOWNLOAD_DIR = getConfig('DOWNLOAD_DIR')
     if not DOWNLOAD_DIR.endswith("/"):
         DOWNLOAD_DIR = DOWNLOAD_DIR + '/'
-    DOWNLOAD_STATUS_UPDATE_INTERVAL = int(getConfig('DOWNLOAD_STATUS_UPDATE_INTERVAL'))
+    STATUS_UPDATE_INTERVAL = int(getConfig('DOWNLOAD_STATUS_UPDATE_INTERVAL'))
     OWNER_ID = int(getConfig('OWNER_ID'))
     AUTO_DELETE_MESSAGE_DURATION = int(getConfig('AUTO_DELETE_MESSAGE_DURATION'))
     TELEGRAM_API = getConfig('TELEGRAM_API')
