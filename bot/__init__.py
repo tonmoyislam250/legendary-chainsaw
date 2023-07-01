@@ -30,7 +30,7 @@ basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 LOGGER = getLogger(__name__)
 
 
-CONFIG_FILE_URL= environ.get('CONFIG_FILE_URL')
+CONFIG_FILE_URL= environ.get('CONFIG')
 try:
     if len(CONFIG_FILE_URL) == 0:
         raise TypeError
@@ -42,7 +42,7 @@ try:
         else:
             log_error(f"Failed to download config.env {res.status_code}")
     except Exception as e:
-        log_error(f"CONFIG_FILE_URL: {e}")
+        log_error(f"CONFIG: {e}")
 except:
     pass
 
