@@ -228,7 +228,7 @@ else:
     sleep(1.5)
 
 try:
-    BASE_URL = getConfig('BASE_URL_OF_BOT').rstrip("/")
+    BASE_URL = getConfig('BASE_URL').rstrip("/")
     if len(BASE_URL) == 0:
         raise KeyError
 except:
