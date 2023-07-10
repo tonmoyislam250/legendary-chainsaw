@@ -188,7 +188,7 @@ class MirrorLeechListener:
                         path = m_path
                     for dirpath, subdir, files in await sync_to_async(walk, m_path, topdown=False):
                         for file_ in files:
-                            if is_first_archive_split(file_) or is_archive(file_) and not file_.endswith('.rar'):
+                            if is_first_archive_split(file_) or is_archive(file_):
                                 f_path = ospath.join(dirpath, file_)
                                 t_path = dirpath.replace(
                                     self.dir, self.newDir) if self.seed else dirpath
