@@ -143,7 +143,7 @@ span{
 span.active{
     transform: rotate(90deg);
     -ms-transform: rotate(90deg);	 /* for IE  */
-    -webkit-transform: rotate(90deg);/* for browsers supporting webkit (such as mrbeast, pewdiepie, safari etc.). */
+    -webkit-transform: rotate(90deg);/* for browsers supporting webkit (such as chrome, firefox, safari etc.). */
     display: inline-block;
 }
 
@@ -676,14 +676,14 @@ def re_verfiy(paused, resumed, client, hash_id):
         client = qbClient(host="localhost", port="8090")
         try:
             client.torrents_file_priority(torrent_hash=hash_id, file_ids=paused, priority=0)
-        except NotFound404Error:
-            raise NotFound404Error
+        except NotFound404Error as e:
+            raise NotFound404Error from e
         except Exception as e:
             LOGGER.error(f"{e} Errored in reverification paused!")
         try:
             client.torrents_file_priority(torrent_hash=hash_id, file_ids=resumed, priority=1)
-        except NotFound404Error:
-            raise NotFound404Error
+        except NotFound404Error as e:
+            raise NotFound404Error from e
         except Exception as e:
             LOGGER.error(f"{e} Errored in reverification resumed!")
         k += 1
@@ -722,8 +722,8 @@ def set_priority(id_):
 
     data = dict(request.form)
 
+    resume = ""
     if len(id_) > 20:
-        resume = ""
         pause = ""
 
         for i, value in data.items():
@@ -742,14 +742,14 @@ def set_priority(id_):
 
         try:
             client.torrents_file_priority(torrent_hash=id_, file_ids=pause, priority=0)
-        except NotFound404Error:
-            raise NotFound404Error
+        except NotFound404Error as e:
+            raise NotFound404Error from e
         except Exception as e:
             LOGGER.error(f"{e} Errored in paused")
         try:
             client.torrents_file_priority(torrent_hash=id_, file_ids=resume, priority=1)
-        except NotFound404Error:
-            raise NotFound404Error
+        except NotFound404Error as e:
+            raise NotFound404Error from e
         except Exception as e:
             LOGGER.error(f"{e} Errored in resumed")
         sleep(1)
@@ -757,7 +757,6 @@ def set_priority(id_):
             LOGGER.error(f"Verification Failed! Hash: {id_}")
         client.auth_log_out()
     else:
-        resume = ""
         for i, value in data.items():
             if "filenode" in i and value == "on":
                 node_no = i.split("_")[-1]
@@ -774,7 +773,7 @@ def set_priority(id_):
 
 @app.route('/')
 def homepage():
-    return "<h7>Hello 🙂🙂</h7>"
+    return "<h1>See mirror-leech-telegram-bot <a href='https://www.github.com/anasty17/mirror-leech-telegram-bot'>@GitHub</a> By <a href='https://github.com/anasty17'>Anas</a></h1>"
 
 @app.errorhandler(Exception)
 def page_not_found(e):
