@@ -21,7 +21,7 @@ pillow
 psutil
 pycountry
 pymongo
-pyrogram==2.0.66
+pyrogram
 python-dotenv
 python-magic
 python-telegram-bot==13.15
