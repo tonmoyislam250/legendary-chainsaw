@@ -3,5 +3,4 @@ export UPSTREAM_REPO="https://github.com/tonmoyislam250/legendary-chainsaw"
 export UPSTREAM_BRANCH="jmdkh"
 rm -rf .git
 python3 -c "import sys; sys.path.insert(0, '/usr/src/binary'); import pewdiepie"
-pip install -r requirements.txt
 python3 -m bot
