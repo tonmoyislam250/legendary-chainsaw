@@ -29,7 +29,7 @@ telegraph
 tenacity
 TgCrypto
 torrentool==1.1.0
-urllib3
+urllib3<2
 yt-dlp
 waybackpy
 heroku3
