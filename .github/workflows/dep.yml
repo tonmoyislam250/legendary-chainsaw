@@ -1,5 +1,6 @@
 name: Manually Deploy to Heroku
 on:
+  push:
   workflow_dispatch:
 jobs:
   deploy:
@@ -16,5 +17,6 @@ jobs:
           stack: "container"
           region: "us"
         env:
+          HD_CONFIG_FILE_URL: ${{secrets.CONFIG}}
           HD_UPSTREAM_REPO: ${{secrets.REPO}}
           HD_UPSTREAM_BRANCH: ${{secrets.BRANCH}}
