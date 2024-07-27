@@ -1,17 +1,17 @@
-from pyrogram.handlers import MessageHandler, CallbackQueryHandler
-from pyrogram.filters import command, regex
-from aiohttp import ClientSession
+from httpx import AsyncClient
 from html import escape
+from pyrogram.filters import command, regex
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from urllib.parse import quote
 
-from bot import bot, LOGGER, config_dict, get_client
-from bot.helper.telegram_helper.message_utils import editMessage, sendMessage
-from bot.helper.ext_utils.telegraph_helper import telegraph
-from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot import bot, LOGGER, config_dict, get_qb_client
 from bot.helper.ext_utils.bot_utils import sync_to_async, new_task
+from bot.helper.ext_utils.status_utils import get_readable_file_size
+from bot.helper.ext_utils.telegraph_helper import telegraph
+from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.button_build import ButtonMaker
-from bot.helper.ext_utils.bot_utils import get_readable_file_size
+from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.telegram_helper.message_utils import editMessage, sendMessage
 
 PLUGINS = []
 SITES = None
@@ -19,7 +19,7 @@ TELEGRAPH_LIMIT = 300
 
 
 async def initiate_search_tools():
-    qbclient = await sync_to_async(get_client)
+    qbclient = await sync_to_async(get_qb_client)
     qb_plugins = await sync_to_async(qbclient.search_plugins)
     if SEARCH_PLUGINS := config_dict["SEARCH_PLUGINS"]:
         globals()["PLUGINS"] = []
@@ -37,9 +37,9 @@ async def initiate_search_tools():
     if SEARCH_API_LINK := config_dict["SEARCH_API_LINK"]:
         global SITES
         try:
-            async with ClientSession(trust_env=True) as c:
-                async with c.get(f"{SEARCH_API_LINK}/api/v1/sites") as res:
-                    data = await res.json()
+            async with AsyncClient() as client:
+                response = await client.get(f"{SEARCH_API_LINK}/api/v1/sites")
+                data = response.json()
             SITES = {
                 str(site): str(site).capitalize() for site in data["supported_sites"]
             }
@@ -76,9 +76,9 @@ async def _search(key, site, message, method):
                     f"{SEARCH_API_LINK}/api/v1/recent?site={site}&limit={SEARCH_LIMIT}"
                 )
         try:
-            async with ClientSession(trust_env=True) as c:
-                async with c.get(api) as res:
-                    search_results = await res.json()
+            async with AsyncClient() as client:
+                response = await client.get(api)
+                search_results = response.json()
             if "error" in search_results or search_results["total"] == 0:
                 await editMessage(
                     message,
@@ -100,7 +100,7 @@ async def _search(key, site, message, method):
             return
     else:
         LOGGER.info(f"PLUGINS Searching: {key} from {site}")
-        client = await sync_to_async(get_client)
+        client = await sync_to_async(get_qb_client)
         search = await sync_to_async(
             client.search_start, pattern=key, plugins=site, category="all"
         )
@@ -224,7 +224,7 @@ def _api_buttons(user_id, method):
 async def _plugin_buttons(user_id):
     buttons = ButtonMaker()
     if not PLUGINS:
-        qbclient = await sync_to_async(get_client)
+        qbclient = await sync_to_async(get_qb_client)
         pl = await sync_to_async(qbclient.search_plugins)
         for name in pl:
             PLUGINS.append(name["name"])
