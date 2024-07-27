@@ -1,0 +1,1 @@
+worker: ash start.sh
