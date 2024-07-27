@@ -23,6 +23,8 @@ from subprocess import Popen, run
 from time import time
 from tzlocal import get_localzone
 from uvloop import install
+from requests import get as rget
+
 
 # from faulthandler import enable as faulthandler_enable
 # faulthandler_enable()
